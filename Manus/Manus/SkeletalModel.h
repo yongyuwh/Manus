@@ -1,21 +1,18 @@
-/**
-* Copyright (C) 2015 Manus Machina
-*
-* This file is part of the Manus SDK.
-*
-* Manus SDK is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* Manus SDK is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with Manus SDK. If not, see <http://www.gnu.org/licenses/>.
-*/
+/*
+   Copyright 2015 Manus VR
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 
 #pragma once
 
@@ -27,22 +24,16 @@ class SkeletalModel
 {
 private:
 	FbxManager* m_sdk_manager;
-	FbxScene* m_scene;
-	FbxNode* m_palm_node;
-	FbxNode* m_palm_bone;
-	FbxNode* m_bone_nodes[GLOVE_FINGERS][3];
-
-	GLOVE_POSE ToGlovePose(FbxAMatrix mat);
-
-	// temporary states for the ToGlovePose function call
-	GLOVE_HAND temp_hand;
-	GLOVE_DATA temp_data;
-	GLOVE_QUATERNION temp_quaternion;
+	FbxScene* m_scene[2];
+	FbxNode* m_bone_nodes[2][GLOVE_FINGERS][4];
+	
+	GLOVE_POSE ToGlovePose(FbxAMatrix mat, GLOVE_QUATERNION &Quat);
+	
 
 public:
 	SkeletalModel();
 	~SkeletalModel();
 
 	bool InitializeScene();
-	bool Simulate(const GLOVE_DATA data, GLOVE_SKELETAL* model, GLOVE_HAND hand);
+	bool Simulate(const GLOVE_DATA data, GLOVE_SKELETAL* model, GLOVE_HAND hand, bool OSVR_Compat = false);
 };
