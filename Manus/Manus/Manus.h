@@ -133,36 +133,6 @@ extern "C" {
 	*/
 	MANUS_API int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeout = 0);
 
-	/*! \brief Configure the handedness of the glove.
-	*
-	*  This reconfigures the glove for a different hand.
-	*
-	*  \warning This function overwrites factory settings on the
-	*  glove, it should only be called if the user requested it.
-	*
-	*  This function is thread-safe.
-	*
-	*  \param hand The left or right hand index.
-	*  \param right_hand Set the glove as a right hand.
-	*/
-	MANUS_API int ManusSetHandedness(GLOVE_HAND hand, bool right_hand);
-
-	/*! \brief Calibrate the IMU on the glove.
-	*
-	*  This will run a self-test of the IMU and recalibrate it.
-	*  The glove should be placed on a stable flat surface during
-	*  recalibration.
-	*
-	*  \warning This function overwrites factory settings on the
-	*  glove, it should only be called if the user requested it.
-	*
-	*  \param hand The left or right hand index.
-	*  \param gyro Calibrate the gyroscope.
-	*  \param accel Calibrate the accelerometer.
-	*  \param fingers Calibrate the fingers.
-	*/
-	MANUS_API int ManusCalibrate(GLOVE_HAND hand, bool gyro = true, bool accel = true, bool fingers = false);
-
 	/*! \brief Set the ouput power of the vibration motor.
 	*
 	*  This sets the output power of the vibration motor.

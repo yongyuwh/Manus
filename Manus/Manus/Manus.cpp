@@ -27,8 +27,16 @@
 #include "WinDevices.h"
 #endif
 
+#include <hidapi.h>
 #include <vector>
 #include <mutex>
+
+
+// TODO: Acquire Manus VID/PID
+#define MANUS_VENDOR_ID         0x0
+#define MANUS_PRODUCT_ID        0x0
+#define MANUS_GLOVE_PAGE	    0x03
+#define MANUS_GLOVE_USAGE       0x04
 
 bool g_initialized = false;
 
@@ -42,9 +50,10 @@ int GetGlove(GLOVE_HAND hand, Glove** elem)
 {
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
+	// cycle through all the gloves until the first one of the desired handedness has been found
 	for (int i = 0; i < g_gloves.size(); i++)
 	{
-		if (g_gloves[i]->GetHand() == hand && g_gloves[i]->IsConnected())
+		if (g_gloves[i]->GetHand() == hand && g_gloves[i]->IsRunning())
 		{
 			*elem = g_gloves[i];
 			return MANUS_SUCCESS;
@@ -54,14 +63,14 @@ int GetGlove(GLOVE_HAND hand, Glove** elem)
 	return MANUS_DISCONNECTED;
 }
 
-void DeviceConnected(const wchar_t* device_path)
+void DeviceConnected(const char* device_path)
 {
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
 	// Check if the glove already exists
 	for (Glove* glove : g_gloves)
 	{
-		if (wcscmp(device_path, glove->GetDevicePath()) == 0)
+		if (strcmp(device_path, glove->GetDevicePath()) == 0)
 		{
 			// The glove was previously connected, reconnect it
 			glove->Connect();
@@ -69,8 +78,13 @@ void DeviceConnected(const wchar_t* device_path)
 		}
 	}
 
+	struct hid_device_info *hid_device = hid_enumerate_device(device_path);
+
 	// The glove hasn't been connected before, add it to the list of gloves
-	g_gloves.push_back(new Glove(device_path));
+	if (hid_device->usage_page == MANUS_GLOVE_PAGE && hid_device->usage == MANUS_GLOVE_USAGE)
+		g_gloves.push_back(new Glove(device_path));
+
+	hid_free_enumeration(hid_device);
 }
 
 int ManusInit()
@@ -78,51 +92,28 @@ int ManusInit()
 	if (g_initialized)
 		return MANUS_ERROR;
 
+	if (hid_init() != 0)
+		return MANUS_ERROR;
+
 	if (!g_skeletal.InitializeScene())
 		return MANUS_ERROR;
 
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
-	// Get a list of Manus Glove Services.
-	HDEVINFO device_info_set = SetupDiGetClassDevs(&GUID_MANUS_GLOVE_SERVICE, nullptr, nullptr,
-		DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-
-	if (device_info_set)
+	// Enumerate the Manus devices on the system
+	struct hid_device_info *hid_devices, *current_device;
+	hid_devices = hid_enumerate(MANUS_VENDOR_ID, MANUS_PRODUCT_ID);
+	current_device = hid_devices;
+	for (int i = 0; current_device != nullptr; ++i)
 	{
-		SP_DEVICE_INTERFACE_DATA device_interface_data = { 0 };
-		device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-		int device_index = 0;
-		while (SetupDiEnumDeviceInterfaces(device_info_set, nullptr, &GUID_MANUS_GLOVE_SERVICE,
-			device_index, &device_interface_data))
+		// We're only interested in devices that identify themselves as VR Gloves
+		if (current_device->usage_page == MANUS_GLOVE_PAGE && current_device->usage == MANUS_GLOVE_USAGE)
 		{
-			DWORD required_size = 0;
-
-			// Query the required size for the structure.
-			SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data, nullptr,
-				0, &required_size, nullptr);
-
-			// HRESULT will never be S_OK here, so just check the size.
-			if (required_size > 0)
-			{
-				// Allocate the interface detail structure.
-				SP_DEVICE_INTERFACE_DETAIL_DATA* device_interface_detail_data = (SP_DEVICE_INTERFACE_DETAIL_DATA*)malloc(required_size);
-				device_interface_detail_data->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-
-				// Get the detailed device data which includes the device path.
-				if (SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data, device_interface_detail_data,
-					required_size, nullptr, nullptr))
-				{
-					g_gloves.push_back(new Glove(device_interface_detail_data->DevicePath));
-				}
-
-				free(device_interface_detail_data);
-			}
-
-			device_index++;
+			g_gloves.push_back(new Glove(current_device->path));
 		}
-
-		SetupDiDestroyDeviceInfoList(device_info_set);
+		current_device = current_device->next;
 	}
+	hid_free_enumeration(hid_devices);
 
 #ifdef _WIN32
 	g_devices = new WinDevices();
@@ -180,52 +171,6 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 		return MANUS_SUCCESS;
 	else
 		return MANUS_ERROR;
-}
-
-int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
-{
-	// Get the glove from the list
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	if (ret != MANUS_SUCCESS)
-		return ret;
-
-	// Set the flags
-	uint8_t flags = elem->GetFlags();
-	if (right_hand)
-		flags |= GLOVE_FLAGS_HANDEDNESS;
-	else
-		flags &= ~GLOVE_FLAGS_HANDEDNESS;
-	elem->SetFlags(flags);
-
-	return MANUS_SUCCESS;
-}
-
-int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers)
-{
-	// Get the glove from the list
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	if (ret != MANUS_SUCCESS)
-		return ret;
-
-	// Set the flags
-	uint8_t flags = elem->GetFlags();
-	if (gyro)
-		flags |= GLOVE_FLAGS_CAL_GYRO;
-	else
-		flags &= ~GLOVE_FLAGS_CAL_GYRO;
-	if (accel)
-		flags |= GLOVE_FLAGS_CAL_ACCEL;
-	else
-		flags &= ~GLOVE_FLAGS_CAL_ACCEL;
-	if (fingers)
-		flags |= GLOVE_FLAGS_CAL_FINGERS;
-	else
-		flags &= ~GLOVE_FLAGS_CAL_FINGERS;
-	elem->SetFlags(flags);
-
-	return MANUS_SUCCESS;
 }
 
 int ManusSetVibration(GLOVE_HAND hand, float power){
