@@ -190,7 +190,8 @@
     <ClCompile Include="WinDevices.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HandModel.fbx" />
+    <None Include="Manus_Handv2_Left_Meshless.FBX" />
+    <None Include="Manus_Handv2_Right_Meshless.FBX" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Manus.rc" />
