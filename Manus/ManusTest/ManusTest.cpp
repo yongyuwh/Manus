@@ -48,11 +48,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		else
 			hand = GLOVE_RIGHT;
 
-		ManusCalibrate(hand, false, false, true);
+		//ManusCalibrate(hand, false, false, true);
 
 		printf("Move the flex sensors across their whole range and then press any key\n");
 		_getch();
-		ManusCalibrate(hand, false, false, false);
+		//ManusCalibrate(hand, false, false, false);
 
 		printf("Calibration finished, press any key to exit\n");
 		_getch();
