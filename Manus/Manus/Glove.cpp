@@ -97,7 +97,7 @@ void Glove::DeviceThread(Glove* glove)
 	// Keep retrieving reports while the SDK is running and the device is connected
 	while (glove->m_running && glove->m_device)
 	{
-		unsigned char report[sizeof(GLOVE_REPORT) + 1];
+		unsigned char report[sizeof(GLOVE_REPORT)];
 		int read = hid_read(glove->m_device, report, sizeof(report));
 
 		if (read == -1)
@@ -108,8 +108,7 @@ void Glove::DeviceThread(Glove* glove)
 		{
 			std::lock_guard<std::mutex> lk(glove->m_report_mutex);
 
-			if (report[0] == GLOVE_REPORT_ID)
-				memcpy(&glove->m_report, report + 1, sizeof(GLOVE_REPORT));
+			memcpy(&glove->m_report, report + 1, sizeof(GLOVE_REPORT));
 
 			glove->UpdateState();
 
