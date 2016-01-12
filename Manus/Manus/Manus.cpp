@@ -63,6 +63,8 @@ int GetGlove(GLOVE_HAND hand, Glove** elem)
 
 void DeviceConnected(const char* device_path)
 {
+	//!!
+	return;
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
 	// Check if the glove already exists
@@ -76,12 +78,12 @@ void DeviceConnected(const char* device_path)
 		}
 	}
 
-	struct hid_device_info *hid_device = hid_enumerate_device(device_path);
+	//!!struct hid_device_info *hid_device = hid_enumerate_device(device_path);
 	
 	// The glove hasn't been connected before, add it to the list of gloves	
 	g_gloves.push_back(new Glove(device_path));
 
-	hid_free_enumeration(hid_device);
+	//!!hid_free_enumeration(hid_device);
 }
 
 int ManusInit()
