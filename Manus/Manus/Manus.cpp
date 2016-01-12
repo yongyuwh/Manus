@@ -30,10 +30,11 @@
 
 
 // TODO: Acquire Manus VID/PID
-#define MANUS_VENDOR_ID         0x0
-#define MANUS_PRODUCT_ID        0x0
-#define MANUS_GLOVE_PAGE	    0x03
-#define MANUS_GLOVE_USAGE       0x04
+// Using Manus VID/PID as defined in dis.c from GloveCode
+#define MANUS_VENDOR_ID         0x0220
+#define MANUS_PRODUCT_ID        0x0001
+//#define MANUS_GLOVE_PAGE	    0x03
+//#define MANUS_GLOVE_USAGE       0x04
 
 bool g_initialized = false;
 
@@ -76,10 +77,9 @@ void DeviceConnected(const char* device_path)
 	}
 
 	struct hid_device_info *hid_device = hid_enumerate_device(device_path);
-
-	// The glove hasn't been connected before, add it to the list of gloves
-	if (hid_device->usage_page == MANUS_GLOVE_PAGE && hid_device->usage == MANUS_GLOVE_USAGE)
-		g_gloves.push_back(new Glove(device_path));
+	
+	// The glove hasn't been connected before, add it to the list of gloves	
+	g_gloves.push_back(new Glove(device_path));
 
 	hid_free_enumeration(hid_device);
 }
@@ -103,11 +103,7 @@ int ManusInit()
 	current_device = hid_devices;
 	for (int i = 0; current_device != nullptr; ++i)
 	{
-		// We're only interested in devices that identify themselves as VR Gloves
-		if (current_device->usage_page == MANUS_GLOVE_PAGE && current_device->usage == MANUS_GLOVE_USAGE)
-		{
-			g_gloves.push_back(new Glove(current_device->path));
-		}
+		g_gloves.push_back(new Glove(current_device->path));
 		current_device = current_device->next;
 	}
 	hid_free_enumeration(hid_devices);
