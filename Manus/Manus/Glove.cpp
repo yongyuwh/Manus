@@ -107,8 +107,7 @@ void Glove::DeviceThread(Glove* glove)
 		// TODO: Check if the bytes read matches the report size
 		{
 			std::lock_guard<std::mutex> lk(glove->m_report_mutex);
-
-			memcpy(&glove->m_report, report + 1, sizeof(GLOVE_REPORT));
+			memcpy(&glove->m_report, report, sizeof(GLOVE_REPORT));
 
 			glove->UpdateState();
 
@@ -156,12 +155,12 @@ uint8_t Glove::GetFlags()
 }
 
 GLOVE_HAND Glove::GetHand() {
-	return (m_flags & GLOVE_FLAGS_HANDEDNESS) ? GLOVE_RIGHT : GLOVE_LEFT;
+	return (m_report.flags & GLOVE_FLAGS_HANDEDNESS) ? GLOVE_RIGHT : GLOVE_LEFT;
 }
 
 void Glove::SetVibration(float power)
 {
-	GLOVE_OUTPUT_REPORT output;
+	GLOVE_RUMBLER_REPORT output;
 
 	// clipping
 	if (power < 0.0) power = 0.0;

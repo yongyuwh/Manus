@@ -40,7 +40,6 @@
 #pragma pack(push, 1) // exact fit - no padding
 typedef struct
 {
-	//uint8_t id;
 	uint8_t flags;
 	int16_t quat[GLOVE_QUATS]; 
 	int16_t accel[GLOVE_AXES];
@@ -50,19 +49,14 @@ typedef struct
 typedef struct
 {
 	uint16_t rumbler;
-} GLOVE_OUTPUT_REPORT;
+} GLOVE_RUMBLER_REPORT;
 
-typedef struct
-{
-	int16_t compass[GLOVE_AXES];
-} COMPASS_REPORT;
 #pragma pack(pop) //back to whatever the previous packing mode was
 
 class Glove
 {
 private:
 	bool m_running;
-	uint8_t m_flags;
 
 	GLOVE_DATA m_data;
 	unsigned int m_packets;
