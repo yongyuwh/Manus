@@ -9,6 +9,7 @@
     <ClCompile Include="SkeletalModel.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinDevices.cpp" />
+    <ClCompile Include="DeviceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Devices.h" />
@@ -23,6 +24,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="WinDevices.h" />
+    <ClInclude Include="DeviceManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Manus.rc" />

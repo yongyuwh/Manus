@@ -165,6 +165,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="Devices.h" />
     <ClInclude Include="FbxMemStream.h" />
     <ClInclude Include="Glove.h" />
@@ -179,6 +180,7 @@
     <ClInclude Include="WinDevices.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="FbxMemStream.cpp" />
     <ClCompile Include="Glove.cpp" />
     <ClCompile Include="Manus.cpp" />

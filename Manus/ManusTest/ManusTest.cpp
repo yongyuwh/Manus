@@ -21,6 +21,8 @@ limitations under the License.
 #include <math.h>
 #include <conio.h>
 
+
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	ManusInit();
@@ -58,6 +60,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		while (true)
 		{
+			if (_kbhit()) 
+			{
+				if (_getch() == 'q') break;
+			}
+
 			for (int i = 0; i < 2; i++)
 			{
 				GLOVE_HAND hand = (GLOVE_HAND)i;

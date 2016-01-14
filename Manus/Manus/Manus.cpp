@@ -19,33 +19,24 @@
 #include "Glove.h"
 #include "Devices.h"
 #include "SkeletalModel.h"
-
-#ifdef _WIN32
-#include "WinDevices.h"
-#endif
-
+#include "DeviceManager.h"
 #include <hidapi.h>
 #include <vector>
 #include <mutex>
-
-
-// TODO: Acquire Manus VID/PID
-// Using Manus VID/PID as defined in dis.c from GloveCode
-#define MANUS_VENDOR_ID         0x0220
-#define MANUS_PRODUCT_ID        0x0001
-//#define MANUS_GLOVE_PAGE	    0x03
-//#define MANUS_GLOVE_USAGE       0x04
 
 bool g_initialized = false;
 
 std::vector<Glove*> g_gloves;
 std::mutex g_gloves_mutex;
 
-Devices* g_devices;
+DeviceManager *g_device_manager;
 SkeletalModel g_skeletal;
 
 int GetGlove(GLOVE_HAND hand, Glove** elem)
 {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
 	// cycle through all the gloves until the first one of the desired handedness has been found
@@ -61,31 +52,6 @@ int GetGlove(GLOVE_HAND hand, Glove** elem)
 	return MANUS_DISCONNECTED;
 }
 
-void DeviceConnected(const char* device_path)
-{
-	//!!
-	return;
-	std::lock_guard<std::mutex> lock(g_gloves_mutex);
-
-	// Check if the glove already exists
-	for (Glove* glove : g_gloves)
-	{
-		if (strcmp(device_path, glove->GetDevicePath()) == 0)
-		{
-			// The glove was previously connected, reconnect it
-			glove->Connect();
-			return;
-		}
-	}
-
-	//!!struct hid_device_info *hid_device = hid_enumerate_device(device_path);
-	
-	// The glove hasn't been connected before, add it to the list of gloves	
-	g_gloves.push_back(new Glove(device_path));
-
-	//!!hid_free_enumeration(hid_device);
-}
-
 int ManusInit()
 {
 	if (g_initialized)
@@ -97,24 +63,7 @@ int ManusInit()
 	if (!g_skeletal.InitializeScene())
 		return MANUS_ERROR;
 
-	std::lock_guard<std::mutex> lock(g_gloves_mutex);
-
-	// Enumerate the Manus devices on the system
-	struct hid_device_info *hid_devices, *current_device;
-	hid_devices = hid_enumerate(MANUS_VENDOR_ID, MANUS_PRODUCT_ID);
-	current_device = hid_devices;
-	for (int i = 0; current_device != nullptr; ++i)
-	{
-		g_gloves.push_back(new Glove(current_device->path));
-		current_device = current_device->next;
-	}
-	hid_free_enumeration(hid_devices);
-
-#ifdef _WIN32
-	g_devices = new WinDevices();
-	g_devices->SetDeviceConnected(DeviceConnected);
-#endif
-
+	g_device_manager = new DeviceManager();
 	g_initialized = true;
 
 	return MANUS_SUCCESS;
@@ -131,9 +80,7 @@ int ManusExit()
 		delete glove;
 	g_gloves.clear();
 
-#ifdef _WIN32
-	delete g_devices;
-#endif
+	delete g_device_manager;
 
 	g_initialized = false;
 
@@ -142,6 +89,9 @@ int ManusExit()
 
 int ManusGetData(GLOVE_HAND hand, GLOVE_DATA* data, unsigned int timeout)
 {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
 	// Get the glove from the list
 	Glove* elem;
 	int ret = GetGlove(hand, &elem);
