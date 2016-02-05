@@ -12,6 +12,9 @@
 #define MANUS_BT_VENDOR_ID         0x0220
 #define MANUS_BT_PRODUCT_ID        0x0001
 
+#define NORDIC_USB_VENDOR_ID	   0x1915
+#define NORDIC_USB_PRODUCT_ID      0x007B
+
 typedef struct {
 	uint16_t VID;
 	uint16_t PID;

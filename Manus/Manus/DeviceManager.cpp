@@ -15,16 +15,17 @@ limitations under the License.
 */
 
 #include "stdafx.h" // pre compiled headers
-#include "Glove.h"
+#include "Device.h"
 #include "DeviceManager.h"
 
 #include <thread>
 #include <mutex>
 #include <string.h>
 
-extern std::vector<Glove*> g_gloves;
+//extern std::vector<Glove*> g_gloves;
+extern std::vector<Device*> g_devices;
 extern std::mutex g_gloves_mutex;
-MANUS_ID MANUS_IDS[] = { { MANUS_BT_VENDOR_ID, MANUS_BT_PRODUCT_ID } };
+MANUS_ID MANUS_IDS[] = { { MANUS_BT_VENDOR_ID, MANUS_BT_PRODUCT_ID } , {NORDIC_USB_VENDOR_ID, NORDIC_USB_PRODUCT_ID}  };
 
 DeviceManager::DeviceManager() {
 	this->Running = true;
@@ -55,17 +56,17 @@ void DeviceManager::EnumerateDevices() {
 			// with the device paths known. 
 			// Walk through the previously detected gloves and compare 
 			// their device paths to the currently found glove.
-			for (Glove* glove : g_gloves) {
-				if (!(strcasecmp(glove->GetDevicePath(), current_device->path))) {
+			for (Device* device : g_devices) {
+				if (!(strcasecmp(device->GetDevicePath(), current_device->path))) {
 					found = true;
 					//Reconnect if previously disconnected
-					if (!glove->IsRunning()) glove->Connect();
+					if (!device->IsRunning()) device->Connect();
 					break;
 				}
 			}
 
 			// If the device isn't previously seen, add it.
-			if (!found) g_gloves.push_back(new Glove(current_device->path));
+			if (!found) g_devices.push_back(new Device(current_device->path));
 
 			// Examine the next HID device
 			current_device = current_device->next;

@@ -16,8 +16,8 @@
 
 #include "stdafx.h"
 #include "Manus.h"
-#include "Glove.h"
-#include "Devices.h"
+//#include "Glove.h"
+#include "Device.h"
 #include "SkeletalModel.h"
 #include "DeviceManager.h"
 #include <hidapi.h>
@@ -26,12 +26,14 @@
 
 bool g_initialized = false;
 
-std::vector<Glove*> g_gloves;
+//std::vector<Glove*> g_gloves; 
+std::vector<Device*> g_devices;
 std::mutex g_gloves_mutex;
 
 DeviceManager *g_device_manager;
 SkeletalModel g_skeletal;
 
+/*
 int GetGlove(GLOVE_HAND hand, Glove** elem)
 {
 	if (!g_initialized)
@@ -51,6 +53,8 @@ int GetGlove(GLOVE_HAND hand, Glove** elem)
 
 	return MANUS_DISCONNECTED;
 }
+*/
+
 
 int ManusInit()
 {
@@ -76,9 +80,16 @@ int ManusExit()
 
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
+	/*
 	for (Glove* glove : g_gloves)
 		delete glove;
 	g_gloves.clear();
+	*/
+
+	for (Device* device : g_devices)
+		delete device;
+	g_devices.clear();
+
 
 	delete g_device_manager;
 
@@ -92,6 +103,7 @@ int ManusGetData(GLOVE_HAND hand, GLOVE_DATA* data, unsigned int timeout)
 	if (!g_initialized)
 		return MANUS_ERROR;
 
+	/*
 	// Get the glove from the list
 	Glove* elem;
 	int ret = GetGlove(hand, &elem);
@@ -102,6 +114,16 @@ int ManusGetData(GLOVE_HAND hand, GLOVE_DATA* data, unsigned int timeout)
 		return MANUS_INVALID_ARGUMENT;
 
 	return elem->GetData(data, timeout) ? MANUS_SUCCESS : MANUS_ERROR;
+	*/
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetData(data, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+
 }
 
 int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeout)
@@ -119,6 +141,7 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 }
 
 int ManusSetVibration(GLOVE_HAND hand, float power){
+	/*
 	Glove* elem;
 	int ret = GetGlove(hand, &elem);
 	
@@ -128,4 +151,7 @@ int ManusSetVibration(GLOVE_HAND hand, float power){
 	elem->SetVibration(power);
 
 	return MANUS_SUCCESS;
+	*/
+
+	return MANUS_ERROR;
 }

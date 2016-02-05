@@ -20,12 +20,14 @@ limitations under the License.
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <conio.h>
-
+#include <stdint.h>
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	ManusInit();
+
+
 
 	LARGE_INTEGER freq;
 	QueryPerformanceFrequency(&freq);
@@ -36,7 +38,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	char in = _getch();
 	// reset the cursor position
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD());
-
+	float min = 1000, max = 0, tot = 0;
+	int count = 0; uint8_t running_count = 0;
+	float running_values[256] = { 0 };
+	bool running_valid = false;
 	if (in == 'c')
 	{
 		GLOVE_HAND hand;
@@ -74,10 +79,12 @@ int _tmain(int argc, _TCHAR* argv[])
 				GLOVE_DATA data = { 0 };
 				GLOVE_SKELETAL skeletal = { 0 };
 
+				SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)0, (SHORT)(8 * i) });
+
 				if (ManusGetData(hand, &data, 1000) == MANUS_SUCCESS)
 				{
-					printf("glove: %d - %d %s\n", i, data.PacketNumber, i > 0 ? "Right" : "Left");
-					ManusGetSkeletal(hand, &skeletal);
+					printf("glove: %d - %06d %s\n", i, data.PacketNumber, i > 0 ? "Right" : "Left");
+					//ManusGetSkeletal(hand, &skeletal);
 				}
 				else
 				{
@@ -87,7 +94,20 @@ int _tmain(int argc, _TCHAR* argv[])
 
 				QueryPerformanceCounter(&end);
 				elapsed.QuadPart = end.QuadPart - start.QuadPart;
-				printf("interval: %fms\n", (elapsed.QuadPart * 1000) / (double)freq.QuadPart);
+				
+				float interval = (elapsed.QuadPart * 1000) / (double)freq.QuadPart;
+				if (interval > max) max = interval;
+				if (interval < min) min = interval;
+				tot += interval;
+				float avg = tot / count++;
+				running_values[running_count++] = interval;
+				float running_avg = 0;
+				for (int i = 0; i < 256; i++) {
+					running_avg += running_values[i];
+				}
+				if (count == 255 && running_values[0] != 0) running_valid = true;
+				if (running_valid) running_avg /= 256; else running_avg = NAN;
+				printf("interval: %06.3f ms  min: %06.3f ms  max: %06.3f ms  avg: %06.3f ms  running avg: %06.3f ms\n", interval, min, max, avg, running_avg);
 
 
 				printf("accel: x: % 1.5f; y: % 1.5f; z: % 1.5f\n", data.Acceleration.x, data.Acceleration.y, data.Acceleration.z);

@@ -15,7 +15,7 @@
  */
 
 #pragma once
-/*
+
 #include "Manus.h"
 
 #include <hidapi.h>
@@ -37,32 +37,37 @@
 #define GLOVE_REPORT_ID     1
 #define COMPASS_REPORT_ID   2
 
-
+#define DEVICE_TYPE_LOW   2
+#define DEVICE_TYPE_COUNT 4
+enum device_type_t : uint8_t {
+	DEV_GLOVE_LEFT = DEVICE_TYPE_LOW,
+	DEV_GLOVE_RIGHT,
+	DEV_BRACELET_LEFT,
+	DEV_BRACELET_RIGHT
+} ;
 
 #pragma pack(push, 1) // exact fit - no padding
-typedef struct
-{
-	uint8_t flags;
+typedef struct {
+	device_type_t device_id;
 	int16_t quat[GLOVE_QUATS]; 
 	int16_t accel[GLOVE_AXES];
 	uint8_t fingers[GLOVE_FINGERS];
 } GLOVE_REPORT;
 
-typedef struct
-{
+typedef struct {
 	uint16_t rumbler;
 } GLOVE_RUMBLER_REPORT;
-
 #pragma pack(pop) //back to whatever the previous packing mode was
 
-class Glove
+
+class Device
 {
 private:
 	bool m_running;
 
-	GLOVE_DATA m_data;
-	unsigned int m_packets;
-	GLOVE_REPORT m_report;
+	GLOVE_DATA   m_data[DEVICE_TYPE_COUNT];
+	unsigned int m_packets[DEVICE_TYPE_COUNT];
+	GLOVE_REPORT m_report[DEVICE_TYPE_COUNT];
 
 	char* m_device_path;
 	hid_device* m_device;
@@ -72,20 +77,19 @@ private:
 	std::condition_variable m_report_block;
 
 public:
-	Glove(const char* device_path);
-	~Glove();
+	Device(const char* device_path);
+	~Device();
 
 	void Connect();
 	void Disconnect();
 	bool IsRunning() const { return m_running; }
 	const char* GetDevicePath() const { return m_device_path; }
-	bool GetData(GLOVE_DATA* data, unsigned int timeout);
-	uint8_t GetFlags();
-	GLOVE_HAND GetHand();
+	bool GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeout);
+	bool HasDevice(device_type_t device);
+	
 	void SetVibration(float power);
 
 private:
-	static void DeviceThread(Glove* glove);
+	static void DeviceThread(Device* dev);
 	void UpdateState();
 };
-*/

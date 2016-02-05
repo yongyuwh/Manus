@@ -71,6 +71,9 @@ typedef enum {
 	GLOVE_RIGHT,
 } GLOVE_HAND;
 
+
+//-- going to redefine -- 
+
 /**
 * \defgroup Glove Manus Glove
 * @{

@@ -2,19 +2,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="FbxMemStream.cpp" />
-    <ClCompile Include="Glove.cpp" />
-    <ClCompile Include="Manus.cpp" />
     <ClCompile Include="ManusMath.cpp" />
     <ClCompile Include="matrix.cpp" />
     <ClCompile Include="SkeletalModel.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinDevices.cpp" />
     <ClCompile Include="DeviceManager.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="Manus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Devices.h" />
     <ClInclude Include="FbxMemStream.h" />
-    <ClInclude Include="Glove.h" />
     <ClInclude Include="Manus.h" />
     <ClInclude Include="ManusMath.h" />
     <ClInclude Include="matrix.h" />
