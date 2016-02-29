@@ -33,28 +33,6 @@ std::mutex g_gloves_mutex;
 DeviceManager *g_device_manager;
 SkeletalModel g_skeletal;
 
-/*
-int GetGlove(GLOVE_HAND hand, Glove** elem)
-{
-	if (!g_initialized)
-		return MANUS_ERROR;
-
-	std::lock_guard<std::mutex> lock(g_gloves_mutex);
-
-	// cycle through all the gloves until the first one of the desired handedness has been found
-	for (int i = 0; i < g_gloves.size(); i++)
-	{
-		if (g_gloves[i]->GetHand() == hand && g_gloves[i]->IsRunning())
-		{
-			*elem = g_gloves[i];
-			return MANUS_SUCCESS;
-		}
-	}
-
-	return MANUS_DISCONNECTED;
-}
-*/
-
 
 int ManusInit()
 {
@@ -80,12 +58,6 @@ int ManusExit()
 
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
-	/*
-	for (Glove* glove : g_gloves)
-		delete glove;
-	g_gloves.clear();
-	*/
-
 	for (Device* device : g_devices)
 		delete device;
 	g_devices.clear();
@@ -102,19 +74,6 @@ int ManusGetData(GLOVE_HAND hand, GLOVE_DATA* data, unsigned int timeout)
 {
 	if (!g_initialized)
 		return MANUS_ERROR;
-
-	/*
-	// Get the glove from the list
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	if (ret != MANUS_SUCCESS)
-		return ret;
-
-	if (!data)
-		return MANUS_INVALID_ARGUMENT;
-
-	return elem->GetData(data, timeout) ? MANUS_SUCCESS : MANUS_ERROR;
-	*/
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
@@ -141,17 +100,108 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 }
 
 int ManusSetVibration(GLOVE_HAND hand, float power){
-	/*
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		//!! TODO retval?
+		device->SetVibration(power, dev, 200);
+		return MANUS_SUCCESS;
 	
-	if (ret != MANUS_SUCCESS)
-		return ret;
+	}
+	return MANUS_DISCONNECTED;
+}
 
-	elem->SetVibration(power);
+
+
+int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetFlags(*flags, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
+
+int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetRssi(*rssi, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
+
+int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers)
+{
+	uint8_t flags;
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	Device* flags_device = NULL;
+	// Get the glove from the list
+	for (Device* device : g_devices) {
+		if (device->GetFlags(flags, dev, 100)) {
+			flags_device = device;
+		}
+	}
+	if (!flags_device) return MANUS_DISCONNECTED;
+
+	if (gyro)
+		flags |= GLOVE_FLAGS_CAL_GYRO;
+	else
+		flags &= ~GLOVE_FLAGS_CAL_GYRO;
+	if (accel)
+		flags |= GLOVE_FLAGS_CAL_ACCEL;
+	else
+		flags &= ~GLOVE_FLAGS_CAL_ACCEL;
+	if (fingers)
+		flags |= GLOVE_FLAGS_CAL_FINGERS;
+	else
+		flags &= ~GLOVE_FLAGS_CAL_FINGERS;
+	
+	flags_device->SetFlags(flags, dev); 
 
 	return MANUS_SUCCESS;
-	*/
+}
 
-	return MANUS_ERROR;
+
+int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
+{
+	// Get the glove from the list
+	uint8_t flags;
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	Device* flags_device = NULL;
+	for (Device* device : g_devices) {
+		if (device->GetFlags(flags, dev, 100)) {
+			flags_device = device;
+		}
+	}
+
+	if (!flags_device) return MANUS_DISCONNECTED;
+
+	if (right_hand)
+		flags |= GLOVE_FLAGS_HANDEDNESS;
+	else
+		flags &= ~GLOVE_FLAGS_HANDEDNESS;
+
+	flags_device->SetFlags(flags, dev);
+
+	return MANUS_SUCCESS;
+}
+
+
+
+int ManusPowerOff(GLOVE_HAND hand) {
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		//!! TODO retval?
+		device->PowerOff(dev);
+		return MANUS_SUCCESS;
+	}
+	return MANUS_DISCONNECTED;
 }

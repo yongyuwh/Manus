@@ -17,6 +17,8 @@
 #ifndef _MANUS_H
 #define _MANUS_H
 
+#include <stdint.h>
+
 #ifdef MANUS_EXPORTS
 #define MANUS_API __declspec(dllexport)
 #else
@@ -133,6 +135,18 @@ extern "C" {
 	*  \param power The power of the vibration motor ranging from 0 to 1 (ex. 0.5 = 50% power).
 	*/
 	MANUS_API int ManusSetVibration(GLOVE_HAND hand, float power);
+
+
+
+	MANUS_API int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout);
+	MANUS_API int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout);
+
+	MANUS_API int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers);
+	MANUS_API int ManusSetHandedness(GLOVE_HAND hand, bool right_hand);
+
+	MANUS_API int ManusPowerOff(GLOVE_HAND hand);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -29,7 +29,7 @@ void print_hex_memory_(void *mem, int size) {
 
 void print_hex_memory(uint8_t *p) {
 	// this is much faster
-	
+	return;
 	// skip byte 0 as this is the device id
 	printf("0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x \n0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
 		p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19], p[20]);
@@ -106,13 +106,14 @@ int main() {
 		if (running_valid) running_avg[nr] /= 256; else running_avg[nr] = NAN;
 		printf("device # %d     packet count %06u     signal strenght: TODO     program running %u\n", nr, count[nr], time(NULL) - startup);
 		printf("interval: %09.3f ms  min: %09.3f ms  max: %09.3f ms  avg: %09.3f ms  running avg: %09.3f ms\n", interval, min[nr], max[nr], avg, running_avg[nr]);
+		/*
 		uint32_t *tx_success_cnt = (uint32_t*)(1+buff) ;
 		uint32_t *tx_failure_cnt = (uint32_t*)(9+buff);
 		uint32_t *rf_failure_cnt = (uint32_t*)(13+buff) ;
 		int32_t *signal_strenght = (int32_t*)(5+buff);
 		printf("signal %09d     tx_success_cnt %09u     tx_failure_cnt %09u     rf_failure_cnt %09u      \n", *signal_strenght, *tx_success_cnt, *tx_failure_cnt, *rf_failure_cnt);
 		print_hex_memory(buff);
-		
+		*/
 
 
 	}

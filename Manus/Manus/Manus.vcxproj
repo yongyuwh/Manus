@@ -165,8 +165,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Device.h" />
     <ClInclude Include="DeviceManager.h" />
-    <ClInclude Include="Devices.h" />
     <ClInclude Include="FbxMemStream.h" />
     <ClInclude Include="Manus.h" />
     <ClInclude Include="ManusMath.h" />
@@ -192,7 +192,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="WinDevices.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Manus_Handv2_Left_Meshless.FBX" />
