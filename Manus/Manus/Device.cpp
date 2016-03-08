@@ -79,16 +79,10 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 }
 
 bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeout) {
-	flags = m_report[device - DEVICE_TYPE_LOW].flags;
-	return true;
-	/*
 	// Send request for flags
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_FLAGS_GET;
 
-	// Wait until the thread is done writing a packet
-	// But we need to be sure it's sent first
-	//std::this_thread::sleep_for(std::chrono::milliseconds(40));
 	std::unique_lock<std::mutex> lk(m_flags_mutex);
 
 	// Optionally wait until the next package is sent
@@ -101,7 +95,6 @@ bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeou
 			return false;
 		}
 	}
-	
 
 	if (m_flags[device - DEVICE_TYPE_LOW].device_type) {
 		flags = m_flags[device - DEVICE_TYPE_LOW].flags;
@@ -109,22 +102,16 @@ bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeou
 		return true;
 	}
 	return false;
-	*/
+	
 }
 
 bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) {
-	rssi = m_report[device - DEVICE_TYPE_LOW].rssi;
-	return true;
-
-	/*
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
 
-	
 	std::unique_lock<std::mutex> lk(m_stats_mutex);
 	
-
 	// Optionally wait until the next package is sent
 	if (timeout > 0)
 	{
@@ -137,14 +124,40 @@ bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) 
 		}
 	}
 	
-
-	if (m_rf_stats[device - DEVICE_TYPE_LOW].device_type) {
-		rssi = m_rf_stats[device - DEVICE_TYPE_LOW].tx_rssi;
-		m_rf_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_stats[device - DEVICE_TYPE_LOW].device_type) {
+		rssi = m_stats[device - DEVICE_TYPE_LOW].stats.tx_rssi;
+		m_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
-	*/
+}
+
+
+bool Device::GetBattery(uint16_t &battery, device_type_t device, unsigned int timeout) {
+	// Send request for stats
+	m_data_out.device_type = device;
+	m_data_out.message_type = MSG_STATS_GET;
+
+	std::unique_lock<std::mutex> lk(m_stats_mutex);
+
+	// Optionally wait until the next package is sent
+	if (timeout > 0)
+	{
+
+		m_stats_cv.wait_for(lk, std::chrono::milliseconds(timeout));
+		if (!m_running)
+		{
+			lk.unlock();
+			return false;
+		}
+	}
+
+	if (m_stats[device - DEVICE_TYPE_LOW].device_type) {
+		battery = m_stats[device - DEVICE_TYPE_LOW].stats.battery_level;
+		m_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+		return true;
+	}
+	return false;
 }
 
 
@@ -158,6 +171,7 @@ void Device::SetVibration(float power, device_type_t dev, unsigned int timeout) 
 	m_data_out.rumble.power = (uint16_t)(0xFFFF * power);
 }
 
+
 void Device::SetFlags(uint8_t flags, device_type_t device) {
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_FLAGS_SET;
@@ -168,7 +182,6 @@ void Device::PowerOff(device_type_t device) {
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_POWER_OFF;
 }
-
 
 void Device::Connect() {
 	Disconnect();
@@ -184,8 +197,6 @@ void Device::Disconnect() {
 }
 
 void Device::DeviceThread(Device* dev) {
-	
-
 	// TODO: remove threading? (HIDAPI can work without, just return old report when hid_read returns 0)
 	dev->m_device = hid_open_path(dev->m_device_path);
 
@@ -202,7 +213,6 @@ void Device::DeviceThread(Device* dev) {
 			USB_OUT_PACKET data;
 			data.report_id = 0;
 			data.data = dev->m_data_out;
-			//int write = hid_write(dev->m_device, (uint8_t*)(&dev->m_data_out), sizeof(m_data_out));
 			int write = hid_write(dev->m_device, (uint8_t*)(&data), sizeof(data));
 			dev->m_data_out.device_type = DEV_NONE;
 		}
@@ -230,9 +240,9 @@ void Device::DeviceThread(Device* dev) {
 						}
 					case MSG_STATS_GET: {
 						std::lock_guard<std::mutex> lk(dev->m_stats_mutex);
-						dev->m_rf_stats[deviceNr].device_type = recv_data->device_type;
-						dev->m_rf_stats[deviceNr].tx_rssi = recv_data->rf_stats.tx_rssi;
-						dev->m_flags_cv.notify_all();
+						dev->m_stats[deviceNr].device_type = recv_data->device_type;
+						dev->m_stats[deviceNr].stats = recv_data->stats;
+						dev->m_stats_cv.notify_all();
 						
 						break;
 						}
@@ -254,14 +264,13 @@ void Device::DeviceThread(Device* dev) {
 
 }
 
+
 void Device::UpdateState() {
 
 	for (int devNr = 0; devNr < DEVICE_TYPE_COUNT; devNr++) {
 
 		if (m_report[devNr].device_id) {
 			m_report[devNr].device_id =(device_type_t) 0; // re-using as data-freshness flag
-
-
 
 			m_data[devNr].PacketNumber++;
 
@@ -289,25 +298,3 @@ void Device::UpdateState() {
 		}
 	}
 }
-
-
-
-
-/*
-void Device::SetVibration(float power)
-{
-	GLOVE_RUMBLER_REPORT output;
-
-	// clipping
-	if (power < 0.0) power = 0.0;
-	if (power > 1.0) power = 1.0;
-
-	output.rumbler = uint16_t(power * std::numeric_limits<uint16_t>::max());
-
-	unsigned char report[sizeof(GLOVE_REPORT) + 1];
-	report[0] = 0x00;
-	memcpy(report + 1, &output, sizeof(GLOVE_REPORT));
-
-	hid_write(m_device, report, sizeof(report));
-}
-*/

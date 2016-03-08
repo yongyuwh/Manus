@@ -75,18 +75,6 @@ typedef struct {
 } GLOVE_RUMBLER_REPORT;
 
 
-typedef struct {
-	device_type_t device_type;
-	uint32_t      tx_success;
-	uint32_t      tx_failure;
-	uint32_t      rf_failure;
-	int32_t       tx_rssi;
-} GLOVE_RF_STATS;
-
-typedef struct {
-	device_type_t device_type;
-	uint8_t       flags;
-} GLOVE_FLAGS;
 
 
 // ESB PACKET DEFINITIONS
@@ -96,7 +84,8 @@ typedef struct {
 	uint16_t tx_fail_since_last_success;
 	uint16_t rf_failure;
 	int32_t  tx_rssi;
-} esb_rf_stats_t;
+	uint16_t battery_level;
+} stats_t;
 
 
 typedef struct {
@@ -107,7 +96,7 @@ typedef struct {
 		struct { uint32_t dongle_address; } pairing;
 		struct { uint8_t  flags; } flags;
 		struct { uint16_t power; uint16_t duration; } rumble;
-		esb_rf_stats_t rf_stats;
+		stats_t stats;
 		uint8_t raw[26];
 	};
 } ESB_DATA_PACKET;
@@ -117,6 +106,16 @@ typedef struct {
 	ESB_DATA_PACKET data;
 } USB_OUT_PACKET;
 #pragma pack(pop) //back to whatever the previous packing mode was
+
+typedef struct {
+	device_type_t device_type;
+	uint8_t       flags;
+} GLOVE_FLAGS;
+
+typedef struct {
+	device_type_t device_type;
+	stats_t stats;
+} GLOVE_STATS;
 
 
 class Device
@@ -128,7 +127,7 @@ private:
 	unsigned int   m_packets[DEVICE_TYPE_COUNT];
 	GLOVE_REPORT   m_report[DEVICE_TYPE_COUNT];
 
-	GLOVE_RF_STATS m_rf_stats[DEVICE_TYPE_COUNT];
+	GLOVE_STATS    m_stats[DEVICE_TYPE_COUNT];
 	GLOVE_FLAGS    m_flags[DEVICE_TYPE_COUNT];
 
 	char* m_device_path;
@@ -161,6 +160,7 @@ public:
 	bool GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeout);
 	bool GetFlags(uint8_t &flags, device_type_t device, unsigned int timeout);
 	bool GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout);
+	bool GetBattery(uint16_t &battery, device_type_t device, unsigned int timeout);
 
 	bool HasDevice(device_type_t device);
 	

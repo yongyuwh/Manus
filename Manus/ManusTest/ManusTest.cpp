@@ -64,24 +64,40 @@ int _tmain(int argc, _TCHAR* argv[])
 	else if (in == 'p')
 	{
 
-		uint8_t test;
-		while (true)
+		//uint8_t test; 
+		bool running = true;
+		while (running)
 		{
 			if (_kbhit()) 
 			{
 				char key = _getch();
-				if (key == 'q') break;
 
-				if (key == '0') ManusSetHandedness((GLOVE_HAND)0, false);  //turn left  into right  fb -> fa
-				if (key == '1') ManusSetHandedness((GLOVE_HAND)1, true);   //turn right into left fa -> fb
-
-				if (key == 'k') ManusSetVibration(GLOVE_LEFT, 0);
-				if (key == 'l') ManusSetVibration(GLOVE_LEFT, 0.2);
-				
-				if (key == 'e') ManusSetVibration(GLOVE_RIGHT, 0);
-				if (key == 'r') ManusSetVibration(GLOVE_RIGHT, 0.2);
-
-				if (key == 'u') ManusPowerOff(GLOVE_LEFT);
+				switch (key) {
+				case 'q':
+					running = false;
+					break;
+				case '0':
+					ManusSetHandedness((GLOVE_HAND)0, false);  //turn left  into right  fb -> fa
+					break;
+				case '1':
+					ManusSetHandedness((GLOVE_HAND)1, true);//turn right into left fa -> fb
+					break;
+				case 'k':
+					ManusSetVibration(GLOVE_LEFT, 0);
+					break;
+				case 'l':
+					ManusSetVibration(GLOVE_LEFT, 0.2); 
+					break;
+				case 'e':
+					ManusSetVibration(GLOVE_RIGHT, 0);
+					break;
+				case 'r':
+					ManusSetVibration(GLOVE_RIGHT, 0.2);
+					break;
+				case 'u':
+					ManusPowerOff(GLOVE_LEFT);
+					break;
+				}
 
 			}
 			//for (int i = 1; i < 2; i++) // only right
@@ -95,10 +111,6 @@ int _tmain(int argc, _TCHAR* argv[])
 				GLOVE_DATA data = { 0 };
 				GLOVE_SKELETAL skeletal = { 0 };
 
-				int32_t rssi = 0;
-				uint8_t flags = 0;
-				bool flags_valid = false;
-				bool rssi_valid = false;
 
 				SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)0, (SHORT)(9 * i) });
 
@@ -141,29 +153,39 @@ int _tmain(int argc, _TCHAR* argv[])
 
 				printf("fingers: %f;%f;%f;%f;%f\n", data.Fingers[0], data.Fingers[1], data.Fingers[2], data.Fingers[3], data.Fingers[4]);
 
-				if (0 == (count[i] % 100)) {
-					flags_valid = ManusGetFlags(hand, &flags, 1000) == MANUS_SUCCESS;
-
-					if (flags_valid) {
-						SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)0, (SHORT)((9 * i) + 7) });
-						printf("Flags: 0x%02x (%u)", flags, count[i]); 
+				if (0 == (count[i] % 99)) {
+					uint8_t flags;
+					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)0, (SHORT)((9 * i) + 7) });
+					if (ManusGetFlags(hand, &flags, 1000) == MANUS_SUCCESS) {
+						
+						printf("Flags: 0x%02x (%3u)", flags, count[i] / 99);
 					}
 					else {
-						SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)15, (SHORT)((9 * i) + 7) });
-						printf("no flags  (%u)", count[i]);
+						printf("no flag data");
 					}
 				}
 
-				if (50 == (count[i] % 100)) {
-					rssi_valid = ManusGetRssi(hand, &rssi, 1000) == MANUS_SUCCESS;
-					
-					if (rssi_valid) {
-						SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)40, (SHORT)((9 * i) + 7) });
-						printf("rssi: %d  (%u)", rssi, count[i]);
+
+				if (33 == (count[i] % 99)) {
+					int32_t rssi;
+					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)50, (SHORT)((9 * i) + 7) });
+					if (ManusGetRssi(hand, &rssi, 1000) == MANUS_SUCCESS) {
+						printf("rssi: %d  (%3u)", rssi, count[i] / 99);
 					}
 					else {
-						SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)65, (SHORT)((9 * i) + 7) });
-						printf("no rssi  (%u)", count[i]);
+						printf("no rssi data");
+					}
+				}
+
+				
+				if (66 == (count[i] % 99)) {
+					uint16_t battery;
+					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)25, (SHORT)((9 * i) + 7) });
+					if (ManusGetBattery(hand, &battery, 1000) == MANUS_SUCCESS) {
+						printf("battery: %6d  (%3u)", battery, count[i]/99);
+					}
+					else {
+						printf("no battery data");
 					}
 				}
 				

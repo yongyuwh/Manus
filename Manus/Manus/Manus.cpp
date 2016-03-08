@@ -16,7 +16,6 @@
 
 #include "stdafx.h"
 #include "Manus.h"
-//#include "Glove.h"
 #include "Device.h"
 #include "SkeletalModel.h"
 #include "DeviceManager.h"
@@ -132,6 +131,19 @@ int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout) {
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
 		if (device->GetRssi(*rssi, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
+
+int ManusGetBattery(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetBattery(*battery, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
 	}
