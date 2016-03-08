@@ -212,3 +212,13 @@ int ManusPowerOff(GLOVE_HAND hand) {
 	}
 	return MANUS_DISCONNECTED;
 }
+
+bool ManusIsConnected(GLOVE_HAND hand) {
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->IsDeviceConnected(dev)) {
+			return true;
+		}
+	}
+	return false;
+}

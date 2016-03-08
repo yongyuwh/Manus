@@ -22,6 +22,15 @@ limitations under the License.
 #include <conio.h>
 #include <stdint.h>
 
+void ClearScreenPart(int screenPart) 
+{
+	COORD coord = { (SHORT)0, (SHORT)(9 * screenPart) };
+	DWORD lpNumberOfCharsWritten;
+	CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ConsoleScreenBufferInfo);
+	FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', ConsoleScreenBufferInfo.dwSize.X * 8, coord, &lpNumberOfCharsWritten);
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -31,7 +40,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	LARGE_INTEGER freq;
 	QueryPerformanceFrequency(&freq);
-
+	ClearScreenPart(0);
+	
 	printf("Press 'p' to start reading the gloves\n");
 	printf("Press 'c' to start the finger calibration procedure\n");
 
@@ -51,6 +61,8 @@ int _tmain(int argc, _TCHAR* argv[])
 			hand = GLOVE_LEFT;
 		else
 			hand = GLOVE_RIGHT;
+		
+		ClearScreenPart(0);
 
 		ManusCalibrate(hand, false, false, true);
 
@@ -63,8 +75,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else if (in == 'p')
 	{
-
-		//uint8_t test; 
+		ClearScreenPart(0);
+		ClearScreenPart(1);
 		bool running = true;
 		while (running)
 		{
@@ -100,8 +112,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 
 			}
-			//for (int i = 1; i < 2; i++) // only right
-			//for (int i = 0; i < 1; i++) // only left
+
 			for (int i = 0; i < 2; i++)
 			{
 				GLOVE_HAND hand = (GLOVE_HAND)i;
@@ -111,17 +122,16 @@ int _tmain(int argc, _TCHAR* argv[])
 				GLOVE_DATA data = { 0 };
 				GLOVE_SKELETAL skeletal = { 0 };
 
+				COORD coord = { (SHORT)0, (SHORT)(9 * i) };
 
-				SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)0, (SHORT)(9 * i) });
-
-				//if (ManusGetData(hand, &data, 1000) == MANUS_SUCCESS)
-				if (ManusGetData(hand, &data, 50) == MANUS_SUCCESS)
+				if (ManusIsConnected(hand) && (ManusGetData(hand, &data, 1000) == MANUS_SUCCESS))
 				{
 					printf("glove: %d - %06d %s\n", i, data.PacketNumber, i > 0 ? "Right" : "Left");
 					//ManusGetSkeletal(hand, &skeletal);
 				}
 				else
 				{
+					ClearScreenPart(i);
 					printf("glove: %d not found \n", i);
 					continue;
 				}
@@ -188,9 +198,6 @@ int _tmain(int argc, _TCHAR* argv[])
 						printf("no battery data");
 					}
 				}
-				
-				
-				
 				
 			}
 			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD());
