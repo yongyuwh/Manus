@@ -132,13 +132,26 @@ int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout) {
 	return MANUS_DISCONNECTED;
 }
 
-int ManusGetBattery(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout) {
+int ManusGetBatteryVoltage(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout) {
 	if (!g_initialized)
 		return MANUS_ERROR;
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
-		if (device->GetBattery(*battery, dev, timeout)) {
+		if (device->GetBatteryVoltage(*battery, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
+
+int ManusGetBatteryPercentage(GLOVE_HAND hand, uint8_t* battery, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetBatteryPercentage(*battery, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
 	}

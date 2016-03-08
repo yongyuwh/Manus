@@ -187,18 +187,30 @@ int _tmain(int argc, _TCHAR* argv[])
 					}
 				}
 
-				
+				/*
 				if (66 == (count[i] % 99)) {
 					uint16_t battery;
 					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)25, (SHORT)((9 * i) + 7) });
-					if (ManusGetBattery(hand, &battery, 1000) == MANUS_SUCCESS) {
+					if (ManusGetBatteryVoltage(hand, &battery, 1000) == MANUS_SUCCESS) {
 						printf("battery: %6d  (%3u)", battery, count[i]/99);
 					}
 					else {
 						printf("no battery data");
 					}
 				}
-				
+				*/
+				if (66 == (count[i] % 99)) {
+					uint8_t battery;
+					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)25, (SHORT)((9 * i) + 7) });
+					if (ManusGetBatteryPercentage(hand, &battery, 1000) == MANUS_SUCCESS) {
+						printf("battery: %6d  (%3u)", battery, count[i] / 99);
+					}
+					else {
+						printf("no battery data");
+					}
+				}
+
+
 			}
 			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD());
 		}

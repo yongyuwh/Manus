@@ -140,7 +140,8 @@ extern "C" {
 
 	MANUS_API int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout);
 	MANUS_API int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout);
-	MANUS_API int ManusGetBattery(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout);
+	MANUS_API int ManusGetBatteryVoltage(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout);
+	MANUS_API int ManusGetBatteryPercentage(GLOVE_HAND hand, uint8_t* battery, unsigned int timeout);
 
 	MANUS_API int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers);
 	MANUS_API int ManusSetHandedness(GLOVE_HAND hand, bool right_hand);

@@ -132,7 +132,7 @@ bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) 
 }
 
 
-bool Device::GetBattery(uint16_t &battery, device_type_t device, unsigned int timeout) {
+bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned int timeout) {
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
@@ -152,7 +152,35 @@ bool Device::GetBattery(uint16_t &battery, device_type_t device, unsigned int ti
 	}
 
 	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
-		battery = m_remote_stats[device - DEVICE_TYPE_LOW].stats.battery_level;
+		voltage = m_remote_stats[device - DEVICE_TYPE_LOW].stats.battery_voltage;
+		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+		return true;
+	}
+	return false;
+}
+
+
+bool Device::GetBatteryPercentage(uint8_t &percentage, device_type_t device, unsigned int timeout) {
+	// Send request for stats
+	m_data_out.device_type = device;
+	m_data_out.message_type = MSG_STATS_GET;
+
+	std::unique_lock<std::mutex> lk(m_stats_mutex);
+
+	// Optionally wait until the next package is sent
+	if (timeout > 0)
+	{
+
+		m_stats_cv.wait_for(lk, std::chrono::milliseconds(timeout));
+		if (!m_running)
+		{
+			lk.unlock();
+			return false;
+		}
+	}
+
+	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
+		percentage = m_remote_stats[device - DEVICE_TYPE_LOW].stats.battery_percentage;
 		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
 		return true;
 	}
@@ -213,11 +241,14 @@ void Device::DeviceThread(Device* dev) {
 			data.report_id = 0;
 			data.data = dev->m_data_out;
 			int write = hid_write(dev->m_device, (uint8_t*)(&data), sizeof(data));
+			
 			dev->m_data_out.device_type = DEV_NONE;
 		}
 
 		uint8_t report[32];
-		int read = hid_read(dev->m_device, report, sizeof(report));
+		//int read = hid_read(dev->m_device, report, sizeof(report));
+		int read = hid_read_timeout(dev->m_device, report, sizeof(report), HID_READ_TIMEOUT_MS);
+
 
 		if (read == -1)
 			break;

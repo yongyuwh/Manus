@@ -25,6 +25,11 @@
 #include <vector>
 #include <inttypes.h>
 
+//
+#define HID_READ_TIMEOUT_MS 50
+#define HID_WRITE_TIMEOUT_MS 50
+
+
 // flag for handedness (0 = left, 1 = right)
 #define GLOVE_FLAGS_HANDEDNESS  0x1
 #define GLOVE_FLAGS_CAL_GYRO    0x2
@@ -84,7 +89,8 @@ typedef struct {
 	uint16_t tx_fail_since_last_success;
 	uint16_t rf_failure;
 	int32_t  tx_rssi;
-	uint16_t battery_level;
+	uint16_t battery_voltage;
+	uint8_t battery_percentage;
 } stats_t;
 
 
@@ -165,7 +171,8 @@ public:
 	bool GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeout);
 	bool GetFlags(uint8_t &flags, device_type_t device, unsigned int timeout);
 	bool GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout);
-	bool GetBattery(uint16_t &battery, device_type_t device, unsigned int timeout);
+	bool GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned int timeout);
+	bool GetBatteryPercentage(uint8_t &percentage, device_type_t device, unsigned int timeout);
 
 	bool IsConnected(device_type_t device);
 	
