@@ -99,7 +99,7 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 int ManusSetVibration(GLOVE_HAND hand, float power){
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
-		if (!device->IsDeviceConnected(dev)) continue;
+		if (!device->IsConnected(dev)) continue;
 		device->SetVibration(power, dev, 200);
 		return MANUS_SUCCESS;
 	}
@@ -206,7 +206,7 @@ int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
 int ManusPowerOff(GLOVE_HAND hand) {
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
-		if (!device->IsDeviceConnected(dev)) continue;
+		if (!device->IsConnected(dev)) continue;
 		device->PowerOff(dev);
 		return MANUS_SUCCESS;
 	}
@@ -216,7 +216,7 @@ int ManusPowerOff(GLOVE_HAND hand) {
 bool ManusIsConnected(GLOVE_HAND hand) {
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
-		if (device->IsDeviceConnected(dev)) {
+		if (device->IsConnected(dev)) {
 			return true;
 		}
 	}

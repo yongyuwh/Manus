@@ -47,7 +47,7 @@ Device::~Device()
 }
 
 
-bool Device::IsDeviceConnected(device_type_t device) {
+bool Device::IsConnected(device_type_t device) {
 	return  m_local_stats[device - DEVICE_TYPE_LOW].packet_count &&
 		(clock() - m_local_stats[device - DEVICE_TYPE_LOW].last_seen) < CLOCKS_PER_SEC;
 }
@@ -73,7 +73,7 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 
 	lk.unlock();
 
-	return this->IsDeviceConnected(device);
+	return this->IsConnected(device);
 	
 }
 

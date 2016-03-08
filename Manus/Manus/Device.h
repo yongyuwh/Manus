@@ -167,7 +167,7 @@ public:
 	bool GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout);
 	bool GetBattery(uint16_t &battery, device_type_t device, unsigned int timeout);
 
-	bool IsDeviceConnected(device_type_t device);
+	bool IsConnected(device_type_t device);
 	
 	void SetVibration(float power, device_type_t dev, unsigned int timeout);
 	void SetFlags(uint8_t flags, device_type_t device);
