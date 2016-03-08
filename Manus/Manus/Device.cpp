@@ -47,9 +47,9 @@ Device::~Device()
 }
 
 
-bool Device::HasDevice(device_type_t device) {
-	// TODO
-	return false;
+bool Device::IsDeviceConnected(device_type_t device) {
+	return  m_local_stats[device - DEVICE_TYPE_LOW].packet_count &&
+		(clock() - m_local_stats[device - DEVICE_TYPE_LOW].last_seen) < CLOCKS_PER_SEC;
 }
 
 
@@ -73,9 +73,8 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 
 	lk.unlock();
 
-
-	// Create better return value, check for freshness
-	return m_data[deviceNr].PacketNumber > 0;
+	return this->IsDeviceConnected(device);
+	
 }
 
 bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeout) {
@@ -124,9 +123,9 @@ bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) 
 		}
 	}
 	
-	if (m_stats[device - DEVICE_TYPE_LOW].device_type) {
-		rssi = m_stats[device - DEVICE_TYPE_LOW].stats.tx_rssi;
-		m_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
+		rssi = m_remote_stats[device - DEVICE_TYPE_LOW].stats.tx_rssi;
+		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
@@ -152,9 +151,9 @@ bool Device::GetBattery(uint16_t &battery, device_type_t device, unsigned int ti
 		}
 	}
 
-	if (m_stats[device - DEVICE_TYPE_LOW].device_type) {
-		battery = m_stats[device - DEVICE_TYPE_LOW].stats.battery_level;
-		m_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
+		battery = m_remote_stats[device - DEVICE_TYPE_LOW].stats.battery_level;
+		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
@@ -240,8 +239,8 @@ void Device::DeviceThread(Device* dev) {
 						}
 					case MSG_STATS_GET: {
 						std::lock_guard<std::mutex> lk(dev->m_stats_mutex);
-						dev->m_stats[deviceNr].device_type = recv_data->device_type;
-						dev->m_stats[deviceNr].stats = recv_data->stats;
+						dev->m_remote_stats[deviceNr].device_type = recv_data->device_type;
+						dev->m_remote_stats[deviceNr].stats = recv_data->stats;
 						dev->m_stats_cv.notify_all();
 						
 						break;
@@ -251,7 +250,8 @@ void Device::DeviceThread(Device* dev) {
 			} else if (report[0] < DEVICE_TYPE_COUNT + DEVICE_TYPE_LOW) {
 				uint8_t deviceNr = report[0] - DEVICE_TYPE_LOW;
 				std::lock_guard<std::mutex> lk(dev->m_report_mutex[deviceNr]);
-				
+				dev->m_local_stats[deviceNr].packet_count++;
+				dev->m_local_stats[deviceNr].last_seen = clock();
 				memcpy(&dev->m_report[deviceNr], report, sizeof(GLOVE_REPORT));
 
 				dev->UpdateState();
@@ -272,7 +272,7 @@ void Device::UpdateState() {
 		if (m_report[devNr].device_id) {
 			m_report[devNr].device_id =(device_type_t) 0; // re-using as data-freshness flag
 
-			m_data[devNr].PacketNumber++;
+			m_data[devNr].PacketNumber = m_local_stats[devNr].packet_count;
 
 			m_data[devNr].Acceleration.x = m_report[devNr].accel[0] / ACCEL_DIVISOR;
 			m_data[devNr].Acceleration.y = m_report[devNr].accel[1] / ACCEL_DIVISOR;

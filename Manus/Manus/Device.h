@@ -117,18 +117,23 @@ typedef struct {
 	stats_t stats;
 } GLOVE_STATS;
 
+typedef struct {
+	uint32_t packet_count = 0;
+	clock_t last_seen = 0;
+} LOCAL_STATS;
 
 class Device
 {
 private:
 	bool m_running;
 
-	GLOVE_DATA     m_data[DEVICE_TYPE_COUNT];
-	unsigned int   m_packets[DEVICE_TYPE_COUNT];
-	GLOVE_REPORT   m_report[DEVICE_TYPE_COUNT];
+	GLOVE_DATA		m_data[DEVICE_TYPE_COUNT];
+	GLOVE_REPORT	m_report[DEVICE_TYPE_COUNT];
 
-	GLOVE_STATS    m_stats[DEVICE_TYPE_COUNT];
-	GLOVE_FLAGS    m_flags[DEVICE_TYPE_COUNT];
+	GLOVE_STATS		m_remote_stats[DEVICE_TYPE_COUNT];
+	GLOVE_FLAGS		m_flags[DEVICE_TYPE_COUNT];
+	LOCAL_STATS		m_local_stats[DEVICE_TYPE_COUNT];
+	
 
 	char* m_device_path;
 	hid_device* m_device;
@@ -162,7 +167,7 @@ public:
 	bool GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout);
 	bool GetBattery(uint16_t &battery, device_type_t device, unsigned int timeout);
 
-	bool HasDevice(device_type_t device);
+	bool IsDeviceConnected(device_type_t device);
 	
 	void SetVibration(float power, device_type_t dev, unsigned int timeout);
 	void SetFlags(uint8_t flags, device_type_t device);

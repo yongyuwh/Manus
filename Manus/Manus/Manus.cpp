@@ -25,7 +25,6 @@
 
 bool g_initialized = false;
 
-//std::vector<Glove*> g_gloves; 
 std::vector<Device*> g_devices;
 std::mutex g_gloves_mutex;
 
@@ -60,7 +59,6 @@ int ManusExit()
 	for (Device* device : g_devices)
 		delete device;
 	g_devices.clear();
-
 
 	delete g_device_manager;
 
@@ -101,15 +99,12 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 int ManusSetVibration(GLOVE_HAND hand, float power){
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
-		//!! TODO retval?
+		if (!device->IsDeviceConnected(dev)) continue;
 		device->SetVibration(power, dev, 200);
 		return MANUS_SUCCESS;
-	
 	}
 	return MANUS_DISCONNECTED;
 }
-
-
 
 int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout) {
 	if (!g_initialized)
@@ -159,6 +154,7 @@ int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers)
 	for (Device* device : g_devices) {
 		if (device->GetFlags(flags, dev, 100)) {
 			flags_device = device;
+			break;
 		}
 	}
 	if (!flags_device) return MANUS_DISCONNECTED;
@@ -191,6 +187,7 @@ int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
 	for (Device* device : g_devices) {
 		if (device->GetFlags(flags, dev, 100)) {
 			flags_device = device;
+			break;
 		}
 	}
 
@@ -206,12 +203,10 @@ int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
 	return MANUS_SUCCESS;
 }
 
-
-
 int ManusPowerOff(GLOVE_HAND hand) {
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
 	for (Device* device : g_devices) {
-		//!! TODO retval?
+		if (!device->IsDeviceConnected(dev)) continue;
 		device->PowerOff(dev);
 		return MANUS_SUCCESS;
 	}
