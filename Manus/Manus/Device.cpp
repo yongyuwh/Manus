@@ -249,10 +249,10 @@ void Device::DeviceThread(Device* dev) {
 		//int read = hid_read(dev->m_device, report, sizeof(report));
 		int read = hid_read_timeout(dev->m_device, report, sizeof(report), HID_READ_TIMEOUT_MS);
 
-		//if (read == 0) continue;
+		if (read == 0) continue;
 
 		if (read == -1) {
-			//dev->m_running = false;
+			dev->m_running = false;
 			break;
 		}
 			
