@@ -123,8 +123,9 @@ int _tmain(int argc, _TCHAR* argv[])
 				GLOVE_SKELETAL skeletal = { 0 };
 
 				COORD coord = { (SHORT)0, (SHORT)(9 * i) };
+				SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
-				if (ManusIsConnected(hand) && (ManusGetData(hand, &data, 1000) == MANUS_SUCCESS))
+				if (ManusIsConnected(hand) && (ManusGetData(hand, &data, 250) == MANUS_SUCCESS))
 				{
 					printf("glove: %d - %06d %s\n", i, data.PacketNumber, i > 0 ? "Right" : "Left");
 					//ManusGetSkeletal(hand, &skeletal);
@@ -175,7 +176,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					}
 				}
 
-
+				/*
 				if (33 == (count[i] % 99)) {
 					int32_t rssi;
 					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)50, (SHORT)((9 * i) + 7) });
@@ -186,7 +187,7 @@ int _tmain(int argc, _TCHAR* argv[])
 						printf("no rssi data");
 					}
 				}
-
+				*/
 				/*
 				if (66 == (count[i] % 99)) {
 					uint16_t battery;
@@ -199,6 +200,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					}
 				}
 				*/
+				/*
 				if (66 == (count[i] % 99)) {
 					uint8_t battery;
 					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)25, (SHORT)((9 * i) + 7) });
@@ -209,7 +211,7 @@ int _tmain(int argc, _TCHAR* argv[])
 						printf("no battery data");
 					}
 				}
-
+				*/
 
 			}
 			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD());
