@@ -163,7 +163,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				printf("euler: x: % 1.5f; y: % 1.5f; z: % 1.5f\n", data.Euler.x * (180.0 / M_PI), data.Euler.y * (180.0 / M_PI), data.Euler.z * (180.0 / M_PI));
 
 				printf("fingers: %f;%f;%f;%f;%f\n", data.Fingers[0], data.Fingers[1], data.Fingers[2], data.Fingers[3], data.Fingers[4]);
-
+				/*
 				if (0 == (count[i] % 99)) {
 					uint8_t flags;
 					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)0, (SHORT)((9 * i) + 7) });
@@ -176,7 +176,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					}
 				}
 
-				/*
+				
 				if (33 == (count[i] % 99)) {
 					int32_t rssi;
 					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (SHORT)50, (SHORT)((9 * i) + 7) });

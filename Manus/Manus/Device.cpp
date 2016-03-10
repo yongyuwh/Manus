@@ -48,12 +48,14 @@ Device::~Device()
 
 
 bool Device::IsConnected(device_type_t device) {
-	return  m_local_stats[device - DEVICE_TYPE_LOW].packet_count &&
+	return  m_running && m_local_stats[device - DEVICE_TYPE_LOW].packet_count &&
 		(clock() - m_local_stats[device - DEVICE_TYPE_LOW].last_seen) < CLOCKS_PER_SEC;
 }
 
 
 bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeout) {
+	if (!IsConnected(device)) return false;
+
 	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
 	// Wait until the thread is done writing a packet
 	std::unique_lock<std::mutex> lk(m_report_mutex[deviceNr]);
@@ -73,7 +75,7 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 
 	lk.unlock();
 
-	return this->IsConnected(device);
+	return IsConnected(device);
 	
 }
 
@@ -219,6 +221,7 @@ void Device::Disconnect() {
 	// Instruct the device thread to stop and
 	// wait for it to shut down.
 	m_running = false;
+	m_data_out.device_type = DEV_NONE;
 	if (m_thread.joinable())
 		m_thread.join();
 }
