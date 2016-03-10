@@ -176,10 +176,9 @@ public:
 
 	bool IsConnected(device_type_t device);
 	
-	void SetVibration(float power, device_type_t dev, unsigned int timeout);
-	void SetFlags(uint8_t flags, device_type_t device);
-	//void SetVibration(float power);
-	void PowerOff(device_type_t device);
+	bool SetVibration(float power, device_type_t dev, unsigned int timeout);
+	bool SetFlags(uint8_t flags, device_type_t device);
+	bool PowerOff(device_type_t device);
 
 private:
 	static void DeviceThread(Device* dev);

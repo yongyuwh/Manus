@@ -80,6 +80,8 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 }
 
 bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeout) {
+	if (!IsConnected(device)) return false;
+	
 	// Send request for flags
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_FLAGS_GET;
@@ -107,6 +109,7 @@ bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeou
 }
 
 bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) {
+	if (!IsConnected(device)) return false;
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
@@ -135,6 +138,7 @@ bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) 
 
 
 bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned int timeout) {
+	if (!IsConnected(device)) return false;
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
@@ -163,6 +167,7 @@ bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned
 
 
 bool Device::GetBatteryPercentage(uint8_t &percentage, device_type_t device, unsigned int timeout) {
+	if (!IsConnected(device)) return false;
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
@@ -190,26 +195,32 @@ bool Device::GetBatteryPercentage(uint8_t &percentage, device_type_t device, uns
 }
 
 
-void Device::SetVibration(float power, device_type_t dev, unsigned int timeout) {
+bool Device::SetVibration(float power, device_type_t device, unsigned int timeout) {
+	if (!IsConnected(device)) return false;
 	// clipping
 	if (power < 0) power = 0.0f;
 	if (power > 1) power = 1.0f;
 
-	m_data_out.device_type = dev;
+	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_RUMBLE_PWR;
 	m_data_out.rumble.power = (uint16_t)(0xFFFF * power);
+	return true;
 }
 
 
-void Device::SetFlags(uint8_t flags, device_type_t device) {
+bool Device::SetFlags(uint8_t flags, device_type_t device) {
+	if (!IsConnected(device)) return false;
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_FLAGS_SET;
 	m_data_out.flags.flags = flags;
+	return true;
 }
 
-void Device::PowerOff(device_type_t device) {
+bool Device::PowerOff(device_type_t device) {
+	if (!IsConnected(device)) return false;
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_POWER_OFF;
+	return true;
 }
 
 void Device::Connect() {
