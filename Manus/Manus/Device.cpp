@@ -81,17 +81,18 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 
 bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
-	
+	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+
 	// Send request for flags
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_FLAGS_GET;
 
-	std::unique_lock<std::mutex> lk(m_flags_mutex);
+	std::unique_lock<std::mutex> lk(m_flags_mutex[deviceNr]);
 
 	// Optionally wait until the next package is sent
 	if (timeout > 0)
 	{
-		m_flags_cv.wait_for(lk, std::chrono::milliseconds(timeout));
+		m_flags_cv[deviceNr].wait_for(lk, std::chrono::milliseconds(timeout));
 		if (!m_running)
 		{
 			lk.unlock();
@@ -110,17 +111,18 @@ bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeou
 
 bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
+	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
 
-	std::unique_lock<std::mutex> lk(m_stats_mutex);
+	std::unique_lock<std::mutex> lk(m_stats_mutex[deviceNr]);
 	
 	// Optionally wait until the next package is sent
 	if (timeout > 0)
 	{
 		
-		m_stats_cv.wait_for(lk, std::chrono::milliseconds(timeout));
+		m_stats_cv[deviceNr].wait_for(lk, std::chrono::milliseconds(timeout));
 		if (!m_running)
 		{
 			lk.unlock();
@@ -139,17 +141,19 @@ bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) 
 
 bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
+	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
 
-	std::unique_lock<std::mutex> lk(m_stats_mutex);
+	std::unique_lock<std::mutex> lk(m_stats_mutex[deviceNr]);
 
 	// Optionally wait until the next package is sent
 	if (timeout > 0)
 	{
 
-		m_stats_cv.wait_for(lk, std::chrono::milliseconds(timeout));
+		m_stats_cv[deviceNr].wait_for(lk, std::chrono::milliseconds(timeout));
 		if (!m_running)
 		{
 			lk.unlock();
@@ -168,17 +172,19 @@ bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned
 
 bool Device::GetBatteryPercentage(uint8_t &percentage, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
+	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
 
-	std::unique_lock<std::mutex> lk(m_stats_mutex);
+	std::unique_lock<std::mutex> lk(m_stats_mutex[deviceNr]);
 
 	// Optionally wait until the next package is sent
 	if (timeout > 0)
 	{
 
-		m_stats_cv.wait_for(lk, std::chrono::milliseconds(timeout));
+		m_stats_cv[deviceNr].wait_for(lk, std::chrono::milliseconds(timeout));
 		if (!m_running)
 		{
 			lk.unlock();
@@ -280,17 +286,17 @@ void Device::DeviceThread(Device* dev) {
 					uint8_t deviceNr = recv_data->device_type - DEVICE_TYPE_LOW;
 					switch (recv_data->message_type) {
 					case MSG_FLAGS_GET: {
-						std::lock_guard<std::mutex> lk(dev->m_flags_mutex);
+						std::lock_guard<std::mutex> lk(dev->m_flags_mutex[deviceNr]);
 						dev->m_flags[deviceNr].device_type = recv_data->device_type;
 						dev->m_flags[deviceNr].flags = recv_data->flags.flags;
-						dev->m_flags_cv.notify_all();
+						dev->m_flags_cv[deviceNr].notify_all();
 						break;
 						}
 					case MSG_STATS_GET: {
-						std::lock_guard<std::mutex> lk(dev->m_stats_mutex);
+						std::lock_guard<std::mutex> lk(dev->m_stats_mutex[deviceNr]);
 						dev->m_remote_stats[deviceNr].device_type = recv_data->device_type;
 						dev->m_remote_stats[deviceNr].stats = recv_data->stats;
-						dev->m_stats_cv.notify_all();
+						dev->m_stats_cv[deviceNr].notify_all();
 						
 						break;
 						}

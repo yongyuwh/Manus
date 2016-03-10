@@ -150,10 +150,10 @@ private:
 	std::condition_variable m_report_cv[DEVICE_TYPE_COUNT];
 
 
-	std::mutex		m_flags_mutex;
-	std::mutex		m_stats_mutex;
-	std::condition_variable m_flags_cv;
-	std::condition_variable m_stats_cv;
+	std::mutex		m_flags_mutex[DEVICE_TYPE_COUNT];
+	std::mutex		m_stats_mutex[DEVICE_TYPE_COUNT];
+	std::condition_variable m_flags_cv[DEVICE_TYPE_COUNT];
+	std::condition_variable m_stats_cv[DEVICE_TYPE_COUNT];
 
 
 	ESB_DATA_PACKET m_data_out = { 0 };
