@@ -19,6 +19,7 @@
 #include "FbxMemStream.h"
 #include "resource.h"
 #include "ManusMath.h"
+#include "Device.h"
 
 const char* s_bone_names[GLOVE_FINGERS][4] = {
 	{ "Finger_00", "Finger_01", "Finger_02", "Finger_03" },

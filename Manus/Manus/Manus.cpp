@@ -16,116 +16,34 @@
 
 #include "stdafx.h"
 #include "Manus.h"
-#include "Glove.h"
-#include "Devices.h"
+#include "Device.h"
 #include "SkeletalModel.h"
-
-#ifdef _WIN32
-#include "WinDevices.h"
-#endif
-
+#include "DeviceManager.h"
+#include <hidapi.h>
 #include <vector>
 #include <mutex>
 
 bool g_initialized = false;
 
-std::vector<Glove*> g_gloves;
+std::vector<Device*> g_devices;
 std::mutex g_gloves_mutex;
 
-Devices* g_devices;
+DeviceManager *g_device_manager;
 SkeletalModel g_skeletal;
 
-int GetGlove(GLOVE_HAND hand, Glove** elem)
-{
-	std::lock_guard<std::mutex> lock(g_gloves_mutex);
-
-	for (int i = 0; i < g_gloves.size(); i++)
-	{
-		if (g_gloves[i]->GetHand() == hand && g_gloves[i]->IsConnected())
-		{
-			*elem = g_gloves[i];
-			return MANUS_SUCCESS;
-		}
-	}
-
-	return MANUS_DISCONNECTED;
-}
-
-void DeviceConnected(const wchar_t* device_path)
-{
-	std::lock_guard<std::mutex> lock(g_gloves_mutex);
-
-	// Check if the glove already exists
-	for (Glove* glove : g_gloves)
-	{
-		if (wcscmp(device_path, glove->GetDevicePath()) == 0)
-		{
-			// The glove was previously connected, reconnect it
-			glove->Connect();
-			return;
-		}
-	}
-
-	// The glove hasn't been connected before, add it to the list of gloves
-	g_gloves.push_back(new Glove(device_path));
-}
 
 int ManusInit()
 {
 	if (g_initialized)
 		return MANUS_ERROR;
 
+	if (hid_init() != 0)
+		return MANUS_ERROR;
+
 	if (!g_skeletal.InitializeScene())
 		return MANUS_ERROR;
 
-	std::lock_guard<std::mutex> lock(g_gloves_mutex);
-
-	// Get a list of Manus Glove Services.
-	HDEVINFO device_info_set = SetupDiGetClassDevs(&GUID_MANUS_GLOVE_SERVICE, nullptr, nullptr,
-		DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-
-	if (device_info_set)
-	{
-		SP_DEVICE_INTERFACE_DATA device_interface_data = { 0 };
-		device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-		int device_index = 0;
-		while (SetupDiEnumDeviceInterfaces(device_info_set, nullptr, &GUID_MANUS_GLOVE_SERVICE,
-			device_index, &device_interface_data))
-		{
-			DWORD required_size = 0;
-
-			// Query the required size for the structure.
-			SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data, nullptr,
-				0, &required_size, nullptr);
-
-			// HRESULT will never be S_OK here, so just check the size.
-			if (required_size > 0)
-			{
-				// Allocate the interface detail structure.
-				SP_DEVICE_INTERFACE_DETAIL_DATA* device_interface_detail_data = (SP_DEVICE_INTERFACE_DETAIL_DATA*)malloc(required_size);
-				device_interface_detail_data->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-
-				// Get the detailed device data which includes the device path.
-				if (SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data, device_interface_detail_data,
-					required_size, nullptr, nullptr))
-				{
-					g_gloves.push_back(new Glove(device_interface_detail_data->DevicePath));
-				}
-
-				free(device_interface_detail_data);
-			}
-
-			device_index++;
-		}
-
-		SetupDiDestroyDeviceInfoList(device_info_set);
-	}
-
-#ifdef _WIN32
-	g_devices = new WinDevices();
-	g_devices->SetDeviceConnected(DeviceConnected);
-#endif
-
+	g_device_manager = new DeviceManager();
 	g_initialized = true;
 
 	return MANUS_SUCCESS;
@@ -138,13 +56,11 @@ int ManusExit()
 
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
-	for (Glove* glove : g_gloves)
-		delete glove;
-	g_gloves.clear();
+	for (Device* device : g_devices)
+		delete device;
+	g_devices.clear();
 
-#ifdef _WIN32
-	delete g_devices;
-#endif
+	delete g_device_manager;
 
 	g_initialized = false;
 
@@ -153,16 +69,17 @@ int ManusExit()
 
 int ManusGetData(GLOVE_HAND hand, GLOVE_DATA* data, unsigned int timeout)
 {
-	// Get the glove from the list
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	if (ret != MANUS_SUCCESS)
-		return ret;
+	if (!g_initialized)
+		return MANUS_ERROR;
 
-	if (!data)
-		return MANUS_INVALID_ARGUMENT;
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetData(data, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
 
-	return elem->GetData(data, timeout) ? MANUS_SUCCESS : MANUS_ERROR;
 }
 
 int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeout)
@@ -179,49 +96,82 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 		return MANUS_ERROR;
 }
 
-int ManusGetSkeletalOSVR(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeout)
-{
-	GLOVE_DATA data;
-
-	int ret = ManusGetData(hand, &data, timeout);
-	if (ret != MANUS_SUCCESS)
-		return ret;
-
-	if (g_skeletal.Simulate(data, model, hand, true))
+int ManusSetVibration(GLOVE_HAND hand, float power){
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (!device->IsConnected(dev)) continue;
+		device->SetVibration(power, dev, 200);
 		return MANUS_SUCCESS;
-	else
-		return MANUS_ERROR;
+	}
+	return MANUS_DISCONNECTED;
 }
 
-int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
-{
-	// Get the glove from the list
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	if (ret != MANUS_SUCCESS)
-		return ret;
+int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
 
-	// Set the flags
-	uint8_t flags = elem->GetFlags();
-	if (right_hand)
-		flags |= GLOVE_FLAGS_HANDEDNESS;
-	else
-		flags &= ~GLOVE_FLAGS_HANDEDNESS;
-	elem->SetFlags(flags);
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetFlags(*flags, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
 
-	return MANUS_SUCCESS;
+int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetRssi(*rssi, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
+
+int ManusGetBatteryVoltage(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetBatteryVoltage(*battery, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
+}
+
+int ManusGetBatteryPercentage(GLOVE_HAND hand, uint8_t* battery, unsigned int timeout) {
+	if (!g_initialized)
+		return MANUS_ERROR;
+
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->GetBatteryPercentage(*battery, dev, timeout)) {
+			return MANUS_SUCCESS;
+		}
+	}
+	return MANUS_DISCONNECTED;
 }
 
 int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers)
 {
+	uint8_t flags;
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	Device* flags_device = NULL;
 	// Get the glove from the list
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	if (ret != MANUS_SUCCESS)
-		return ret;
+	for (Device* device : g_devices) {
+		if (device->GetFlags(flags, dev, 100)) {
+			flags_device = device;
+			break;
+		}
+	}
+	if (!flags_device) return MANUS_DISCONNECTED;
 
-	// Set the flags
-	uint8_t flags = elem->GetFlags();
 	if (gyro)
 		flags |= GLOVE_FLAGS_CAL_GYRO;
 	else
@@ -234,19 +184,54 @@ int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers)
 		flags |= GLOVE_FLAGS_CAL_FINGERS;
 	else
 		flags &= ~GLOVE_FLAGS_CAL_FINGERS;
-	elem->SetFlags(flags);
+	
+	flags_device->SetFlags(flags, dev); 
 
 	return MANUS_SUCCESS;
 }
 
-int ManusSetVibration(GLOVE_HAND hand, float power){
-	Glove* elem;
-	int ret = GetGlove(hand, &elem);
-	
-	if (ret != MANUS_SUCCESS)
-		return ret;
 
-	elem->SetVibration(power);
+int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
+{
+	// Get the glove from the list
+	uint8_t flags;
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	Device* flags_device = NULL;
+	for (Device* device : g_devices) {
+		if (device->GetFlags(flags, dev, 100)) {
+			flags_device = device;
+			break;
+		}
+	}
+
+	if (!flags_device) return MANUS_DISCONNECTED;
+
+	if (right_hand)
+		flags |= GLOVE_FLAGS_HANDEDNESS;
+	else
+		flags &= ~GLOVE_FLAGS_HANDEDNESS;
+
+	flags_device->SetFlags(flags, dev);
 
 	return MANUS_SUCCESS;
+}
+
+int ManusPowerOff(GLOVE_HAND hand) {
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (!device->IsConnected(dev)) continue;
+		device->PowerOff(dev);
+		return MANUS_SUCCESS;
+	}
+	return MANUS_DISCONNECTED;
+}
+
+bool ManusIsConnected(GLOVE_HAND hand) {
+	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
+	for (Device* device : g_devices) {
+		if (device->IsConnected(dev)) {
+			return true;
+		}
+	}
+	return false;
 }

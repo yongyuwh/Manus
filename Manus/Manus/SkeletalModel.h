@@ -17,7 +17,8 @@
 #pragma once
 
 #include "Manus.h"
-#include "Glove.h"
+//#include "Glove.h"
+#include "Device.h"
 #include <fbxsdk.h>
 
 class SkeletalModel

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Devices.h"
+//#include "Devices.h"
 
 #include <functional>
 #include <thread>

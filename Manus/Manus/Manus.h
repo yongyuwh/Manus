@@ -17,6 +17,8 @@
 #ifndef _MANUS_H
 #define _MANUS_H
 
+#include <stdint.h>
+
 #ifdef MANUS_EXPORTS
 #define MANUS_API __declspec(dllexport)
 #else
@@ -71,6 +73,9 @@ typedef enum {
 	GLOVE_RIGHT,
 } GLOVE_HAND;
 
+
+//-- going to redefine -- 
+
 /**
 * \defgroup Glove Manus Glove
 * @{
@@ -122,52 +127,6 @@ extern "C" {
 	*/
 	MANUS_API int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeout = 0);
 
-	/*! \brief Get a skeletal model with OSVR fixes for the given glove state.
-	*
-	*  The skeletal model gives the orientation and position of each bone
-	*  in the hand and fingers. The positions are in millimeters relative to
-	*  the position of the hand palm.
-	*
-	*  Since the thumb has no intermediate phalanx it has a separate structure
-	*  in the model.
-	*
-	*  This function is thread-safe.
-	*
-	*  \param hand The left or right hand index.
-	*  \param model The glove skeletal model.
-	*/
-	MANUS_API int ManusGetSkeletalOSVR(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeout = 0);
-
-	/*! \brief Configure the handedness of the glove.
-	*
-	*  This reconfigures the glove for a different hand.
-	*
-	*  \warning This function overwrites factory settings on the
-	*  glove, it should only be called if the user requested it.
-	*
-	*  This function is thread-safe.
-	*
-	*  \param hand The left or right hand index.
-	*  \param right_hand Set the glove as a right hand.
-	*/
-	MANUS_API int ManusSetHandedness(GLOVE_HAND hand, bool right_hand);
-
-	/*! \brief Calibrate the IMU on the glove.
-	*
-	*  This will run a self-test of the IMU and recalibrate it.
-	*  The glove should be placed on a stable flat surface during
-	*  recalibration.
-	*
-	*  \warning This function overwrites factory settings on the
-	*  glove, it should only be called if the user requested it.
-	*
-	*  \param hand The left or right hand index.
-	*  \param gyro Calibrate the gyroscope.
-	*  \param accel Calibrate the accelerometer.
-	*  \param fingers Calibrate the fingers.
-	*/
-	MANUS_API int ManusCalibrate(GLOVE_HAND hand, bool gyro = true, bool accel = true, bool fingers = false);
-
 	/*! \brief Set the ouput power of the vibration motor.
 	*
 	*  This sets the output power of the vibration motor.
@@ -176,6 +135,20 @@ extern "C" {
 	*  \param power The power of the vibration motor ranging from 0 to 1 (ex. 0.5 = 50% power).
 	*/
 	MANUS_API int ManusSetVibration(GLOVE_HAND hand, float power);
+
+
+
+	MANUS_API int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout);
+	MANUS_API int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout);
+	MANUS_API int ManusGetBatteryVoltage(GLOVE_HAND hand, uint16_t* battery, unsigned int timeout);
+	MANUS_API int ManusGetBatteryPercentage(GLOVE_HAND hand, uint8_t* battery, unsigned int timeout);
+
+	MANUS_API int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers);
+	MANUS_API int ManusSetHandedness(GLOVE_HAND hand, bool right_hand);
+	MANUS_API bool ManusIsConnected(GLOVE_HAND hand);
+	MANUS_API int ManusPowerOff(GLOVE_HAND hand);
+
+
 #ifdef __cplusplus
 }
 #endif
