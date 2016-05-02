@@ -13,17 +13,27 @@ When no longer using the SDK ManusExit() should be called so that the SDK can sa
 A minimal program to retrieve the data from the left Manus Glove looks like this:
 
 	ManusInit();
-	
-	GLOVE_DATA data;
+
 	while (true)
 	{
-		if (ManusGetData(GLOVE_LEFT, &state) == MANUS_SUCCESS)
+		GLOVE_DATA data;
+		if (ManusGetData(GLOVE_LEFT, &data) == MANUS_SUCCESS)
 		{
-			// The data structure now contains the glove data
+			// The data structure now contains the raw glove data
 		}
 		else
 		{
-			// The requested glove is not connected
+			// The requested glove is not connected or an error occured
+		}
+
+		GLOVE_SKELETAL model;
+		ManusGetSkeletal(GLOVE_LEFT, &model)
+		{
+			// The model structure now contains the skeletal model for the hand
+		}
+		else
+		{
+			// The requested glove is not connected or an error occured
 		}
 	}
 	
