@@ -171,12 +171,10 @@
     <ClInclude Include="FbxMemStream.h" />
     <ClInclude Include="Manus.h" />
     <ClInclude Include="ManusMath.h" />
-    <ClInclude Include="matrix.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SkeletalModel.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GloveDevice.cpp" />
@@ -184,7 +182,6 @@
     <ClCompile Include="FbxMemStream.cpp" />
     <ClCompile Include="Manus.cpp" />
     <ClCompile Include="ManusMath.cpp" />
-    <ClCompile Include="matrix.cpp" />
     <ClCompile Include="SkeletalModel.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
