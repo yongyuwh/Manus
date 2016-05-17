@@ -197,3 +197,6 @@ Doxygen/html
 
 # FBX Materials
 .fbm
+
+# Visual C++ database
+*.VC*
