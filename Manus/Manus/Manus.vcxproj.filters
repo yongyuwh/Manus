@@ -20,7 +20,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="types.h" />
-    <ClInclude Include="WinDevices.h" />
     <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="Device.h" />
   </ItemGroup>
