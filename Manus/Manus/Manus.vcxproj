@@ -166,6 +166,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Device.h" />
+    <ClInclude Include="GloveDevice.h" />
     <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="FbxMemStream.h" />
     <ClInclude Include="Manus.h" />
@@ -178,7 +179,7 @@
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="GloveDevice.cpp" />
     <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="FbxMemStream.cpp" />
     <ClCompile Include="Manus.cpp" />

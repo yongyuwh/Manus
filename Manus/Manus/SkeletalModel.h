@@ -17,8 +17,6 @@
 #pragma once
 
 #include "Manus.h"
-//#include "Glove.h"
-#include "Device.h"
 #include <fbxsdk.h>
 
 class SkeletalModel
@@ -26,7 +24,7 @@ class SkeletalModel
 private:
 	FbxManager* m_sdk_manager;
 	FbxScene* m_scene[2];
-	FbxNode* m_bone_nodes[2][GLOVE_FINGERS][4];
+	FbxNode* m_bone_nodes[2][5][4];
 	
 	GLOVE_POSE ToGlovePose(FbxAMatrix mat, GLOVE_QUATERNION &Quat);
 	

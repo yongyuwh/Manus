@@ -25,6 +25,8 @@
 #define MANUS_API __declspec(dllimport)
 #endif
 
+#define MANUS_FINGERS 5
+
 /*! Quaternion representing an orientation. */
 typedef struct {
 	float w, x, y, z;
@@ -50,7 +52,7 @@ typedef struct {
 	//! Orientation in quaternions.
 	GLOVE_QUATERNION Quaternion;
 	//! Normalized bend value for each finger ranging from 0 to 1.
-	float Fingers[5];
+	float Fingers[MANUS_FINGERS];
 	//! Sequence number of the data packet.
 	unsigned int PacketNumber;
 } GLOVE_DATA;

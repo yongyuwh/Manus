@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "stdafx.h"
-#include "Device.h"
+#include "GloveDevice.h"
 #include "ManusMath.h"
 
 #include <hidapi.h>
@@ -31,7 +31,7 @@ limitations under the License.
 #define FINGER_DIVISOR 255.0f
 
 
-Device::Device(const char* device_path)
+GloveDevice::GloveDevice(const char* device_path)
 	: m_running(false) {
 	size_t len = strlen(device_path) + 1;
 	m_device_path = new char[len];
@@ -40,23 +40,23 @@ Device::Device(const char* device_path)
 	Connect();
 }
 
-Device::~Device()
+GloveDevice::~GloveDevice()
 {
 	Disconnect();
 	delete m_device_path;
 }
 
 
-bool Device::IsConnected(device_type_t device) {
-	return  m_running && m_local_stats[device - DEVICE_TYPE_LOW].packet_count &&
-		(clock() - m_local_stats[device - DEVICE_TYPE_LOW].last_seen) < CLOCKS_PER_SEC;
+bool GloveDevice::IsConnected(device_type_t device) {
+	return  m_running && m_local_stats[device - DEVICE_TYPE_START].packet_count &&
+		(clock() - m_local_stats[device - DEVICE_TYPE_START].last_seen) < CLOCKS_PER_SEC;
 }
 
 
-bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeout) {
+bool GloveDevice::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
 
-	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+	uint8_t deviceNr = device - DEVICE_TYPE_START;
 	// Wait until the thread is done writing a packet
 	std::unique_lock<std::mutex> lk(m_report_mutex[deviceNr]);
 
@@ -79,9 +79,9 @@ bool Device::GetData(GLOVE_DATA* data, device_type_t device, unsigned int timeou
 	
 }
 
-bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeout) {
+bool GloveDevice::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
-	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+	uint8_t deviceNr = device - DEVICE_TYPE_START;
 
 	// Send request for flags
 	m_data_out.device_type = device;
@@ -100,18 +100,18 @@ bool Device::GetFlags(uint8_t & flags, device_type_t device, unsigned int timeou
 		}
 	}
 
-	if (m_flags[device - DEVICE_TYPE_LOW].device_type) {
-		flags = m_flags[device - DEVICE_TYPE_LOW].flags;
-		m_flags[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_flags[device - DEVICE_TYPE_START].device_type) {
+		flags = m_flags[device - DEVICE_TYPE_START].flags;
+		m_flags[device - DEVICE_TYPE_START].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
 	
 }
 
-bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) {
+bool GloveDevice::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
-	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+	uint8_t deviceNr = device - DEVICE_TYPE_START;
 	// Send request for stats
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_STATS_GET;
@@ -130,18 +130,18 @@ bool Device::GetRssi(int32_t &rssi, device_type_t device, unsigned int timeout) 
 		}
 	}
 	
-	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
-		rssi = m_remote_stats[device - DEVICE_TYPE_LOW].stats.tx_rssi;
-		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_remote_stats[device - DEVICE_TYPE_START].device_type) {
+		rssi = m_remote_stats[device - DEVICE_TYPE_START].stats.tx_rssi;
+		m_remote_stats[device - DEVICE_TYPE_START].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
 }
 
 
-bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned int timeout) {
+bool GloveDevice::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
-	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+	uint8_t deviceNr = device - DEVICE_TYPE_START;
 
 	// Send request for stats
 	m_data_out.device_type = device;
@@ -161,18 +161,18 @@ bool Device::GetBatteryVoltage(uint16_t &voltage, device_type_t device, unsigned
 		}
 	}
 
-	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
-		voltage = m_remote_stats[device - DEVICE_TYPE_LOW].stats.battery_voltage;
-		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_remote_stats[device - DEVICE_TYPE_START].device_type) {
+		voltage = m_remote_stats[device - DEVICE_TYPE_START].stats.battery_voltage;
+		m_remote_stats[device - DEVICE_TYPE_START].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
 }
 
 
-bool Device::GetBatteryPercentage(uint8_t &percentage, device_type_t device, unsigned int timeout) {
+bool GloveDevice::GetBatteryPercentage(uint8_t &percentage, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
-	uint8_t deviceNr = device - DEVICE_TYPE_LOW;
+	uint8_t deviceNr = device - DEVICE_TYPE_START;
 
 	// Send request for stats
 	m_data_out.device_type = device;
@@ -192,16 +192,16 @@ bool Device::GetBatteryPercentage(uint8_t &percentage, device_type_t device, uns
 		}
 	}
 
-	if (m_remote_stats[device - DEVICE_TYPE_LOW].device_type) {
-		percentage = m_remote_stats[device - DEVICE_TYPE_LOW].stats.battery_percentage;
-		m_remote_stats[device - DEVICE_TYPE_LOW].device_type = DEV_NONE;
+	if (m_remote_stats[device - DEVICE_TYPE_START].device_type) {
+		percentage = m_remote_stats[device - DEVICE_TYPE_START].stats.battery_percentage;
+		m_remote_stats[device - DEVICE_TYPE_START].device_type = DEV_NONE;
 		return true;
 	}
 	return false;
 }
 
 
-bool Device::SetVibration(float power, device_type_t device, unsigned int timeout) {
+bool GloveDevice::SetVibration(float power, device_type_t device, unsigned int timeout) {
 	if (!IsConnected(device)) return false;
 	// clipping
 	if (power < 0) power = 0.0f;
@@ -214,7 +214,7 @@ bool Device::SetVibration(float power, device_type_t device, unsigned int timeou
 }
 
 
-bool Device::SetFlags(uint8_t flags, device_type_t device) {
+bool GloveDevice::SetFlags(uint8_t flags, device_type_t device) {
 	if (!IsConnected(device)) return false;
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_FLAGS_SET;
@@ -222,19 +222,19 @@ bool Device::SetFlags(uint8_t flags, device_type_t device) {
 	return true;
 }
 
-bool Device::PowerOff(device_type_t device) {
+bool GloveDevice::PowerOff(device_type_t device) {
 	if (!IsConnected(device)) return false;
 	m_data_out.device_type = device;
 	m_data_out.message_type = MSG_POWER_OFF;
 	return true;
 }
 
-void Device::Connect() {
+void GloveDevice::Connect() {
 	Disconnect();
 	m_thread = std::thread(DeviceThread, this);
 }
 
-void Device::Disconnect() {
+void GloveDevice::Disconnect() {
 	// Instruct the device thread to stop and
 	// wait for it to shut down.
 	m_running = false;
@@ -243,7 +243,7 @@ void Device::Disconnect() {
 		m_thread.join();
 }
 
-void Device::DeviceThread(Device* dev) {
+void GloveDevice::DeviceThread(GloveDevice* dev) {
 	// TODO: remove threading? (HIDAPI can work without, just return old report when hid_read returns 0)
 	dev->m_device = hid_open_path(dev->m_device_path);
 
@@ -281,9 +281,9 @@ void Device::DeviceThread(Device* dev) {
 
 			if (report[0] == DEVICE_MESSAGE) {
 				ESB_DATA_PACKET *recv_data = (ESB_DATA_PACKET *)(1 + report);
-				if (recv_data->device_type < DEVICE_TYPE_COUNT + DEVICE_TYPE_LOW) {
+				if (recv_data->device_type < DEVICE_TYPE_COUNT + DEVICE_TYPE_START) {
 					
-					uint8_t deviceNr = recv_data->device_type - DEVICE_TYPE_LOW;
+					uint8_t deviceNr = recv_data->device_type - DEVICE_TYPE_START;
 					switch (recv_data->message_type) {
 					case MSG_FLAGS_GET: {
 						std::lock_guard<std::mutex> lk(dev->m_flags_mutex[deviceNr]);
@@ -302,8 +302,8 @@ void Device::DeviceThread(Device* dev) {
 						}
 					}
 				}
-			} else if (report[0] < DEVICE_TYPE_COUNT + DEVICE_TYPE_LOW) {
-				uint8_t deviceNr = report[0] - DEVICE_TYPE_LOW;
+			} else if (report[0] < DEVICE_TYPE_COUNT + DEVICE_TYPE_START) {
+				uint8_t deviceNr = report[0] - DEVICE_TYPE_START;
 				std::lock_guard<std::mutex> lk(dev->m_report_mutex[deviceNr]);
 				dev->m_local_stats[deviceNr].packet_count++;
 				dev->m_local_stats[deviceNr].last_seen = clock();
@@ -320,7 +320,7 @@ void Device::DeviceThread(Device* dev) {
 }
 
 
-void Device::UpdateState() {
+void GloveDevice::UpdateState() {
 
 	for (int devNr = 0; devNr < DEVICE_TYPE_COUNT; devNr++) {
 
@@ -342,7 +342,7 @@ void Device::UpdateState() {
 			// normalize finger data
 			for (int j = 0; j < GLOVE_FINGERS; j++) {
 				// account for finger order
-				if (devNr == DEV_GLOVE_RIGHT - DEVICE_TYPE_LOW)
+				if (devNr == DEV_GLOVE_RIGHT - DEVICE_TYPE_START)
 					m_data[devNr].Fingers[j] = m_report[devNr].fingers[j] / FINGER_DIVISOR;
 				else
 					m_data[devNr].Fingers[j] = m_report[devNr].fingers[GLOVE_FINGERS - (j + 1)] / FINGER_DIVISOR;

@@ -17,6 +17,7 @@
 #include "stdafx.h"
 #include "Manus.h"
 #include "Device.h"
+#include "GloveDevice.h"
 #include "SkeletalModel.h"
 #include "DeviceManager.h"
 #include <hidapi.h>
@@ -25,7 +26,7 @@
 
 bool g_initialized = false;
 
-std::vector<Device*> g_devices;
+std::vector<IDevice*> g_devices;
 std::mutex g_gloves_mutex;
 
 DeviceManager *g_device_manager;
@@ -56,7 +57,7 @@ int ManusExit()
 
 	std::lock_guard<std::mutex> lock(g_gloves_mutex);
 
-	for (Device* device : g_devices)
+	for (IDevice* device : g_devices)
 		delete device;
 	g_devices.clear();
 
@@ -73,7 +74,7 @@ int ManusGetData(GLOVE_HAND hand, GLOVE_DATA* data, unsigned int timeout)
 		return MANUS_ERROR;
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->GetData(data, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
@@ -98,7 +99,7 @@ int ManusGetSkeletal(GLOVE_HAND hand, GLOVE_SKELETAL* model, unsigned int timeou
 
 int ManusSetVibration(GLOVE_HAND hand, float power){
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (!device->IsConnected(dev)) continue;
 		device->SetVibration(power, dev, 200);
 		return MANUS_SUCCESS;
@@ -111,7 +112,7 @@ int ManusGetFlags(GLOVE_HAND hand, uint8_t* flags, unsigned int timeout) {
 		return MANUS_ERROR;
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->GetFlags(*flags, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
@@ -124,7 +125,7 @@ int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout) {
 		return MANUS_ERROR;
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->GetRssi(*rssi, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
@@ -137,7 +138,7 @@ int ManusGetBatteryVoltage(GLOVE_HAND hand, uint16_t* battery, unsigned int time
 		return MANUS_ERROR;
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->GetBatteryVoltage(*battery, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
@@ -150,7 +151,7 @@ int ManusGetBatteryPercentage(GLOVE_HAND hand, uint8_t* battery, unsigned int ti
 		return MANUS_ERROR;
 
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->GetBatteryPercentage(*battery, dev, timeout)) {
 			return MANUS_SUCCESS;
 		}
@@ -162,9 +163,9 @@ int ManusCalibrate(GLOVE_HAND hand, bool gyro, bool accel, bool fingers)
 {
 	uint8_t flags;
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	Device* flags_device = NULL;
+	IDevice* flags_device = NULL;
 	// Get the glove from the list
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->GetFlags(flags, dev, 100)) {
 			flags_device = device;
 			break;
@@ -196,8 +197,8 @@ int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
 	// Get the glove from the list
 	uint8_t flags;
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	Device* flags_device = NULL;
-	for (Device* device : g_devices) {
+	IDevice* flags_device = NULL;
+	for (IDevice* device : g_devices) {
 		if (device->GetFlags(flags, dev, 100)) {
 			flags_device = device;
 			break;
@@ -218,7 +219,7 @@ int ManusSetHandedness(GLOVE_HAND hand, bool right_hand)
 
 int ManusPowerOff(GLOVE_HAND hand) {
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (!device->IsConnected(dev)) continue;
 		device->PowerOff(dev);
 		return MANUS_SUCCESS;
@@ -228,7 +229,7 @@ int ManusPowerOff(GLOVE_HAND hand) {
 
 bool ManusIsConnected(GLOVE_HAND hand) {
 	device_type_t dev = (hand == GLOVE_LEFT) ? DEV_GLOVE_LEFT : DEV_GLOVE_RIGHT;
-	for (Device* device : g_devices) {
+	for (IDevice* device : g_devices) {
 		if (device->IsConnected(dev)) {
 			return true;
 		}

@@ -7,8 +7,8 @@
     <ClCompile Include="SkeletalModel.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="DeviceManager.cpp" />
-    <ClCompile Include="Device.cpp" />
     <ClCompile Include="Manus.cpp" />
+    <ClCompile Include="GloveDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FbxMemStream.h" />
@@ -21,6 +21,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="DeviceManager.h" />
+    <ClInclude Include="GloveDevice.h" />
     <ClInclude Include="Device.h" />
   </ItemGroup>
   <ItemGroup>

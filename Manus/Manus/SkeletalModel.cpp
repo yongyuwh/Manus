@@ -19,9 +19,8 @@
 #include "FbxMemStream.h"
 #include "resource.h"
 #include "ManusMath.h"
-#include "Device.h"
 
-const char* s_bone_names[GLOVE_FINGERS][4] = {
+const char* s_bone_names[MANUS_FINGERS][4] = {
 	{ "Finger_00", "Finger_01", "Finger_02", "Finger_03" },
 	{ "Finger_10", "Finger_11", "Finger_12", "Finger_13" },
 	{ "Finger_20", "Finger_21", "Finger_22", "Finger_23" },
@@ -120,7 +119,7 @@ bool SkeletalModel::InitializeScene()
 
 
 	// Get the bones for each finger.
-	for (int i = 0; i < GLOVE_FINGERS; i++)
+	for (int i = 0; i < MANUS_FINGERS; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{

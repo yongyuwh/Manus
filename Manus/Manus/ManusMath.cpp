@@ -15,9 +15,10 @@
  */
 
 #include "stdafx.h"
-//#include "Glove.h"
-#include "Device.h"
+#include "Manus.h"
 #include "ManusMath.h"
+
+#include <math.h>
 
 ManusMath::ManusMath()
 {
