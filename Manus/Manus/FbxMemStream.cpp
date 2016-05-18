@@ -1,7 +1,6 @@
-#include "stdafx.h"
 #include "FbxMemStream.h"
-#include <fbxsdk.h>
 
+#include <fbxsdk.h>
 #include <algorithm>
 
 FbxMemStream::FbxMemStream(FbxManager* pSdkManager, void* data, FbxInt64 length)

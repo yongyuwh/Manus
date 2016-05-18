@@ -14,7 +14,6 @@
    limitations under the License.
  */
 
-#include "stdafx.h"
 #include "Manus.h"
 #include "Device.h"
 #include "GloveDevice.h"

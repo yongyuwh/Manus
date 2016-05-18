@@ -14,15 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "stdafx.h"
 #include "GloveDevice.h"
 #include "ManusMath.h"
 
 #include <hidapi.h>
 #include <limits>
-
-
-
 
 // Normalization constants 
 #define ACCEL_DIVISOR 16384.0f

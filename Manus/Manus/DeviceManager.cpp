@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "stdafx.h" // pre compiled headers
 #include "Device.h"
 #include "GloveDevice.h"
 #include "DeviceManager.h"

@@ -14,11 +14,12 @@
    limitations under the License.
  */
 
-#include "stdafx.h"
 #include "SkeletalModel.h"
 #include "FbxMemStream.h"
 #include "resource.h"
 #include "ManusMath.h"
+
+#include <Windows.h>
 
 const char* s_bone_names[MANUS_FINGERS][4] = {
 	{ "Finger_00", "Finger_01", "Finger_02", "Finger_03" },
