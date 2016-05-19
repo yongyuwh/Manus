@@ -9,9 +9,6 @@
 // We're going to support Bluetooth and USB, they're going to have
 // different VID/PID so we must support multiple values here
 
-#define MANUS_BT_VENDOR_ID         0x0220
-#define MANUS_BT_PRODUCT_ID        0x0001
-
 #define NORDIC_USB_VENDOR_ID	   0x1915
 #define NORDIC_USB_PRODUCT_ID      0x007B
 

@@ -25,7 +25,7 @@ limitations under the License.
 //extern std::vector<Glove*> g_gloves;
 extern std::vector<IDevice*> g_devices;
 extern std::mutex g_gloves_mutex;
-MANUS_ID MANUS_IDS[] = { { MANUS_BT_VENDOR_ID, MANUS_BT_PRODUCT_ID } , {NORDIC_USB_VENDOR_ID, NORDIC_USB_PRODUCT_ID}  };
+MANUS_ID ManusId = { NORDIC_USB_VENDOR_ID, NORDIC_USB_PRODUCT_ID };
 
 DeviceManager::DeviceManager() {
 	this->Running = true;
@@ -46,35 +46,32 @@ void DeviceManager::EnumerateDevices() {
 
 	// Enumerate the Manus devices on the system
 	struct hid_device_info *hid_devices, *current_device;
-	for (int i = 0; i < sizeof(MANUS_IDS) / sizeof(MANUS_IDS)[0]; i++) {
-		hid_devices = hid_enumerate(MANUS_IDS[i].VID, MANUS_IDS[i].PID);
-		current_device = hid_devices;
-		while (current_device != nullptr) {
-			bool found = false;
-			// The HIDAPI will return gloves we're already connected to.
-			// Therefore we will compare the device path for the found device
-			// with the device paths known. 
-			// Walk through the previously detected gloves and compare 
-			// their device paths to the currently found glove.
-			for (IDevice* device : g_devices) {
-				if (!(strcasecmp(device->GetDevicePath(), current_device->path))) {
-					found = true;
-					//Reconnect if previously disconnected
-					if (!device->IsRunning()) device->Connect();
-					break;
-				}
+	hid_devices = hid_enumerate(ManusId.VID, ManusId.PID);
+	current_device = hid_devices;
+	while (current_device != nullptr) {
+		bool found = false;
+		// The HIDAPI will return gloves we're already connected to.
+		// Therefore we will compare the device path for the found device
+		// with the device paths known.
+		// Walk through the previously detected gloves and compare
+		// their device paths to the currently found glove.
+		for (IDevice* device : g_devices) {
+			if (!(strcasecmp(device->GetDevicePath(), current_device->path))) {
+				found = true;
+				//Reconnect if previously disconnected
+				if (!device->IsRunning()) device->Connect();
+				break;
 			}
-
-			// If the device isn't previously seen, add it.
-			if (!found) g_devices.push_back(new GloveDevice(current_device->path));
-
-			// Examine the next HID device
-			current_device = current_device->next;
 		}
-		hid_free_enumeration(hid_devices);
-	}
-}
 
+		// If the device isn't previously seen, add it.
+		if (!found) g_devices.push_back(new GloveDevice(current_device->path));
+
+		// Examine the next HID device
+		current_device = current_device->next;
+	}
+	hid_free_enumeration(hid_devices);
+}
 
 /*
 A thread that runs the ManusEnumerate() every 10 seconds
