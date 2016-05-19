@@ -235,3 +235,8 @@ bool ManusIsConnected(GLOVE_HAND hand) {
 	}
 	return false;
 }
+
+void ManusEnableDebugMode()
+{
+	g_device_manager->EnableDebugMode();
+}

@@ -26,11 +26,15 @@ class DeviceManager {
 public:
 	DeviceManager();
 	~DeviceManager();
+
+	void EnableDebugMode();
 private:
 	std::thread DeviceThread;
 	std::condition_variable cv;
 	std::mutex cv_m;
 	bool Running;
+	bool DebugMode;
+
 	void EnumerateDevices();
 	void EnumerateDevicesThread();
 };

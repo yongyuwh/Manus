@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "Device.h"
+#include "DebugDevice.h"
 #include "GloveDevice.h"
 #include "DeviceManager.h"
 
@@ -27,12 +28,15 @@ extern std::vector<IDevice*> g_devices;
 extern std::mutex g_gloves_mutex;
 MANUS_ID ManusId = { NORDIC_USB_VENDOR_ID, NORDIC_USB_PRODUCT_ID };
 
-DeviceManager::DeviceManager() {
-	this->Running = true;
-	this->DeviceThread = std::thread(&DeviceManager::EnumerateDevicesThread, this);
+DeviceManager::DeviceManager()
+	: Running(true)
+	, DebugMode(false)
+{
+	DeviceThread = std::thread(&DeviceManager::EnumerateDevicesThread, this);
 }
 
-DeviceManager::~DeviceManager() {
+DeviceManager::~DeviceManager()
+{
 	this->Running = false;
 	cv.notify_all();
 	DeviceThread.join();
@@ -87,4 +91,11 @@ void DeviceManager::EnumerateDevicesThread()
 		cv.wait_for(lock,std::chrono::seconds(MANUS_DEVICE_SCAN_INTERVAL));
 		if (!this->Running) return;
 	}
+}
+
+void DeviceManager::EnableDebugMode()
+{
+	if (!DebugMode)
+		g_devices.push_back(new DebugDevice());
+	DebugMode = true;
 }

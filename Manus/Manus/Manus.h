@@ -149,7 +149,7 @@ extern "C" {
 	MANUS_API int ManusSetHandedness(GLOVE_HAND hand, bool right_hand);
 	MANUS_API bool ManusIsConnected(GLOVE_HAND hand);
 	MANUS_API int ManusPowerOff(GLOVE_HAND hand);
-
+	MANUS_API void ManusEnableDebugMode();
 
 #ifdef __cplusplus
 }

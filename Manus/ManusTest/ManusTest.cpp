@@ -36,7 +36,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	ManusInit();
 
-
+	//ManusEnableDebugMode();
 
 	LARGE_INTEGER freq;
 	QueryPerformanceFrequency(&freq);
