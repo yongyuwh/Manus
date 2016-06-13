@@ -118,12 +118,6 @@ namespace ManusMachina {
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct GLOVE_THUMB {
-        public GLOVE_POSE metacarpal, proximal,
-            distal;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct GLOVE_FINGER {
         public GLOVE_POSE metacarpal, proximal,
             intermediate, distal;
@@ -132,8 +126,7 @@ namespace ManusMachina {
     [StructLayout(LayoutKind.Sequential)]
     public struct GLOVE_SKELETAL {
         public GLOVE_POSE palm;
-        public GLOVE_THUMB thumb;
-        public GLOVE_FINGER index, middle,
+        public GLOVE_FINGER thumb, index, middle,
             ring, pinky;
     }
 
