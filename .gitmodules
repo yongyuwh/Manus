@@ -1,3 +1,6 @@
 [submodule "hidapi"]
 	path = hidapi/source
 	url = https://github.com/signal11/hidapi
+[submodule "ManusIK"]
+	path = ManusIK
+	url = http://manus-vr.com:81/ardent/ManusIK.git
