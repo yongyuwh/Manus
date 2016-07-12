@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Manus", "Manus\Manus.vcxproj", "{6EACBE18-ABDA-44E3-8E0F-3BE6C9781E0D}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManusCS", "ManusCS\ManusCS.csproj", "{EAF5577B-4E2A-4A9F-B64B-94C0CE40311B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hidapi", "..\hidapi\vs2015\hidapi.vcxproj", "{A107C21C-418A-4697-BB10-20C3AA60E2E4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManusIK", "..\ManusIK\ManusIK\ManusIK.vcxproj", "{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,6 +97,20 @@ Global
 		{A107C21C-418A-4697-BB10-20C3AA60E2E4}.Release|Win32.Build.0 = Release|Win32
 		{A107C21C-418A-4697-BB10-20C3AA60E2E4}.Release|x64.ActiveCfg = Release|x64
 		{A107C21C-418A-4697-BB10-20C3AA60E2E4}.Release|x64.Build.0 = Release|x64
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|Win32.Build.0 = Debug|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|x64.ActiveCfg = Debug|x64
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Debug|x64.Build.0 = Debug|x64
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|Any CPU.ActiveCfg = Release|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|Win32.ActiveCfg = Release|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|Win32.Build.0 = Release|Win32
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|x64.ActiveCfg = Release|x64
+		{7EEBAA91-02D0-47A3-9B63-EE8617B882C4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
