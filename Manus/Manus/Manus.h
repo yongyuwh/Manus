@@ -17,7 +17,15 @@
 #ifndef _MANUS_H
 #define _MANUS_H
 
+// if you want to compile the IK uncomment:
+#define MANUS_IK
+
 #include <stdint.h>
+
+// if IK include the GLM headers
+#ifdef MANUS_IK
+#include "..\..\ManusIK\ManusIK\glm\gtc\quaternion.hpp"
+#endif
 
 #ifdef MANUS_EXPORTS
 #define MANUS_API __declspec(dllexport)
@@ -72,6 +80,58 @@ typedef enum {
 	GLOVE_LEFT = 0,
 	GLOVE_RIGHT,
 } GLOVE_HAND;
+
+// IK structs definition
+#ifdef MANUS_IK
+
+typedef glm::dquat IK_QUATERNION;
+typedef glm::dvec3 IK_VECTOR;
+
+/*! Pose structure representing an orientation and position. */
+typedef struct {
+	IK_QUATERNION orientation;
+	IK_VECTOR position;
+} IK_POSE;
+
+/*! Skeletal model of the arm which contains a quaternion for each joint and a position for the hand. */
+typedef struct {
+	GLOVE_POSE shoulder; // OUTPUT
+	GLOVE_QUATERNION upperArm; // OUTPUT
+	GLOVE_POSE lowerArm; // INPUT, set this at the controller position
+} IK_ARM;
+
+/*! Skeletal model for the upper body of the player. */
+typedef struct {
+	GLOVE_POSE head; // INPUT, set this at the headset position
+	IK_ARM left, right;
+} IK_BODY;
+
+typedef struct _IK_SETTINGS {
+	double shoulderLength;
+	double upperArmLength;
+	double lowerArmLength;
+	double upperNeckLength;
+	double lowerNeckLength;
+	IK_VECTOR upperNeckOffset;
+
+	int iterations;
+
+	_IK_SETTINGS() {
+		shoulderLength = 0.4f;
+		upperArmLength = 0.27f;
+		lowerArmLength = 0.28f;
+		upperNeckLength = 0.2f;
+		lowerNeckLength = 0.17f;
+		upperNeckOffset.x = 0.0f;
+		upperNeckOffset.y = 0.05f;
+		upperNeckOffset.z = 0.16f;
+
+		iterations = 10;
+	}
+
+} IK_SETTINGS;
+
+#endif
 
 
 //-- going to redefine -- 
@@ -136,6 +196,16 @@ extern "C" {
 	*/
 	MANUS_API int ManusSetVibration(GLOVE_HAND hand, float power);
 
+#ifdef MANUS_IK
+	/*! \brief Calculate the shoulder and elbow position.
+	*
+	*  This calculates shoulder and elbow position based on the wrist and head position.
+	*
+	*  \param model The model of the body with both the inputs and the outputs of this calculation.
+	*  \param settings The settings of the person used for the calculations, such as arm lengths.
+	*/
+	MANUS_API int ManusUpdateIK(IK_BODY* model, IK_SETTINGS settings = IK_SETTINGS());
+#endif
 
 
 	MANUS_API int ManusGetRssi(GLOVE_HAND hand, int32_t* rssi, unsigned int timeout);
