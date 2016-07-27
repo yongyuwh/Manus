@@ -19,6 +19,7 @@
 #include "Device.h"
 #include "SkeletalModel.h"
 #include "DeviceManager.h"
+#include "SettingsManager.h"
 #include <hidapi.h>
 #include <vector>
 #include <mutex>
@@ -30,7 +31,6 @@ std::mutex g_gloves_mutex;
 
 DeviceManager *g_device_manager;
 SkeletalModel g_skeletal;
-
 
 int ManusInit()
 {
@@ -45,6 +45,11 @@ int ManusInit()
 
 	g_device_manager = new DeviceManager();
 	g_initialized = true;
+
+#ifdef MANUS_IK
+	// initialize the settingsmanager
+	new SettingsManager();
+#endif // MANUS_IK
 
 	return MANUS_SUCCESS;
 }

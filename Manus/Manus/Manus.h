@@ -106,31 +106,6 @@ typedef struct {
 	IK_ARM left, right;
 } IK_BODY;
 
-typedef struct _IK_SETTINGS {
-	double shoulderLength;
-	double upperArmLength;
-	double lowerArmLength;
-	double upperNeckLength;
-	double lowerNeckLength;
-	IK_VECTOR upperNeckOffset;
-
-	int iterations;
-
-	_IK_SETTINGS() {
-		shoulderLength = 0.4f;
-		upperArmLength = 0.27f;
-		lowerArmLength = 0.28f;
-		upperNeckLength = 0.2f;
-		lowerNeckLength = 0.17f;
-		upperNeckOffset.x = 0.0f;
-		upperNeckOffset.y = 0.05f;
-		upperNeckOffset.z = 0.16f;
-
-		iterations = 10;
-	}
-
-} IK_SETTINGS;
-
 #endif
 
 
@@ -204,7 +179,7 @@ extern "C" {
 	*  \param model The model of the body with both the inputs and the outputs of this calculation.
 	*  \param settings The settings of the person used for the calculations, such as arm lengths.
 	*/
-	MANUS_API int ManusUpdateIK(IK_BODY* model, IK_SETTINGS settings = IK_SETTINGS());
+	MANUS_API int ManusUpdateIK(IK_BODY* model);
 #endif
 
 

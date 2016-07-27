@@ -168,10 +168,12 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="FbxMemStream.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Manus.h" />
     <ClInclude Include="ManusMath.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SettingsManager.h" />
     <ClInclude Include="SkeletalModel.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -185,6 +187,7 @@
     <ClCompile Include="Manus.cpp" />
     <ClCompile Include="ManusMath.cpp" />
     <ClCompile Include="matrix.cpp" />
+    <ClCompile Include="SettingsManager.cpp" />
     <ClCompile Include="SkeletalModel.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
