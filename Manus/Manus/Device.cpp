@@ -21,9 +21,6 @@ limitations under the License.
 #include <hidapi.h>
 #include <limits>
 
-
-
-
 // Normalization constants 
 #define ACCEL_DIVISOR 16384.0f
 #define QUAT_DIVISOR 16384.0f
