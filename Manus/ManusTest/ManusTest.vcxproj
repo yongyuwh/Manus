@@ -155,8 +155,12 @@
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ManusIK\ManusIK\ManusIK.vcxproj">
+      <Project>{7eebaa91-02d0-47a3-9b63-ee8617b882c4}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Manus\Manus.vcxproj">
       <Project>{6eacbe18-abda-44e3-8e0f-3be6c9781e0d}</Project>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

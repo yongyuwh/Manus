@@ -20,6 +20,7 @@
 #include "SkeletalModel.h"
 #include "DeviceManager.h"
 #include "SettingsManager.h"
+#include "manusIK.h"
 #include <hidapi.h>
 #include <vector>
 #include <mutex>
@@ -31,6 +32,11 @@ std::mutex g_gloves_mutex;
 
 DeviceManager *g_device_manager;
 SkeletalModel g_skeletal;
+
+int ManusUpdateIK(IK_BODY* model)
+{
+	return ManusUpdateIKInternal(model);
+}
 
 int ManusInit()
 {

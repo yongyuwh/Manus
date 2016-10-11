@@ -156,7 +156,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>hidapi.lib;Hid.lib;libfbxsdk-md.lib;setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ManusIK.lib;hidapi.lib;Hid.lib;libfbxsdk-md.lib;setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2016.1.2\lib\vs2015\x64\release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -202,6 +202,14 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Manus.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\hidapi\vs2015\hidapi.vcxproj">
+      <Project>{a107c21c-418a-4697-bb10-20c3aa60e2e4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ManusIK\ManusIK\ManusIK.vcxproj">
+      <Project>{7eebaa91-02d0-47a3-9b63-ee8617b882c4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <!--
   <ItemGroup>

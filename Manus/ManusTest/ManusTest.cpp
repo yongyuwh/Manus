@@ -77,6 +77,24 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		ClearScreenPart(0);
 		ClearScreenPart(1);
+
+		IK_BODY *bod = new IK_BODY();
+
+		bod->head.orientation.w = 1.0f;
+		bod->head.position.x = 2.0f; // set head at 2m high
+
+		bod->left.lowerArm.orientation.w = 1.0f;
+		bod->left.lowerArm.position.x = 1.0f; // 1m high
+		bod->left.lowerArm.position.y = 0.5f; // 0.5m forward
+		bod->left.lowerArm.position.z = -0.5f; // 0.5m left
+
+		bod->right.lowerArm.orientation.w = 1.0f;
+		bod->right.lowerArm.position.x = 1.0f; // 1m high
+		bod->right.lowerArm.position.y = 0.5f; // 0.5m forward
+		bod->right.lowerArm.position.z = 0.5f; // 0.5m right
+
+		ManusUpdateIK(bod);
+
 		bool running = true;
 		while (running)
 		{

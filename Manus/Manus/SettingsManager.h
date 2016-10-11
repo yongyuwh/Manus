@@ -66,6 +66,7 @@ private:
 	// vars
 	static IK_SETTINGS *ik_settings;
 	static bool initialized;
+
 public:
 	// functions
 	SettingsManager();
